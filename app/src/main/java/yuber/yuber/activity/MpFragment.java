@@ -71,6 +71,7 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
 
     private String Ip = "54.213.51.6";
     private String Puerto = "8080";
+    //papa frita
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
