@@ -1,7 +1,9 @@
 package yuber.yuber.activity;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -10,10 +12,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.firebase.iid.FirebaseInstanceId;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.loopj.android.http.RequestHandle;
 
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.message.BasicHeader;
@@ -31,16 +31,18 @@ public class LoginActivity extends AppCompatActivity {
     private static final int REQUEST_SIGNUP = 0;
     private EditText mEmailView;
     private EditText mPasswordView;
-    private String Ip = "54.191.204.230";
+    private String Ip = "54.213.51.6";
     private String Puerto = "8080";
     ProgressDialog prgDialogCargando;
-    ProgressDialog errorLogin;
+
+    public static final String MyPREFERENCES = "MyPrefs" ;
+    public static final String EmailKey = "emailKey";
+    public static final String TokenKey = "tokenKey";
+    SharedPreferences sharedpreferences;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
         setContentView(R.layout.activity_login);
 
         mEmailView = (EditText) findViewById(R.id.input_email);
@@ -65,35 +67,27 @@ public class LoginActivity extends AppCompatActivity {
         prgDialogCargando.setCancelable(false);
 
         //BOTON LOGIN
-        Button botonSaltearLogin = (Button) findViewById(R.id.btn_login);
-        botonSaltearLogin.setOnClickListener(new View.OnClickListener() {
+        Button login = (Button) findViewById(R.id.btn_login);
+        login.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 EventoLogin(v);
             }
         });
 
-        if (getIntent().getExtras() != null) {
-            for (String key : getIntent().getExtras().keySet()) {
-                String value = getIntent().getExtras().getString(key);
-            }
-        }
-        String token = FirebaseInstanceId.getInstance().getToken();
-
-    }
+    }// finaliza END onCreate()
 
     public void EventoLogin(View view){
-        //token
-        if (getIntent().getExtras() != null) {
-            for (String key : getIntent().getExtras().keySet()) {
-                String value = getIntent().getExtras().getString(key);
-            }
-        }
-        //adding token
-        String token = FirebaseInstanceId.getInstance().getToken();
+        SharedPreferences sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+        String token = sharedpreferences.getString(TokenKey, "");
         if(validate()){
-            prgDialogCargando.show();
+            //prgDialogCargando.show();
             String email = mEmailView.getText().toString();
             String password = mPasswordView.getText().toString();
+
+            sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+            SharedPreferences.Editor editor = sharedpreferences.edit();
+            editor.putString(EmailKey, email);
+            editor.commit();
             /*****************  Consulta a BD si existe el user ********************/
             String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Proveedor/Login";
             JSONObject obj = new JSONObject();
@@ -112,22 +106,17 @@ public class LoginActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
             }
             entity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
-            RequestHandle Rq = client.post(null, url, entity, "application/json", new AsyncHttpResponseHandler(){
+            client.post(null, url, entity, "application/json", new AsyncHttpResponseHandler(){
                 @Override
                 public void onSuccess(String response) {
-                    if (response.contains("true") ){
-                        prgDialogCargando.hide();
-                        //guardo token y email
-
+                    if (response.contains("true")){
                         cambiarAHome();
                     }else{
-                        prgDialogCargando.hide();
                         Toast.makeText(getApplicationContext(), "El usuario y/o contraseña son incorrectos", Toast.LENGTH_LONG).show();
                     }
                 }
                 @Override
                 public void onFailure(int statusCode, Throwable error, String content){
-                    prgDialogCargando.hide();
                     if(statusCode == 404){
                         Toast.makeText(getApplicationContext(), "Requested resource not found", Toast.LENGTH_LONG).show();
                     }else if(statusCode == 500){
@@ -137,12 +126,12 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 }
             });
-
         }
     }
 
     public void cambiarAHome(){
-        Intent homeIntent = new Intent(getApplicationContext(), MapActivity.class);
+        //Obtengo el mail
+        Intent homeIntent = new Intent(getApplicationContext(), MainActivity.class);
         homeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(homeIntent);
     }
@@ -154,11 +143,6 @@ public class LoginActivity extends AppCompatActivity {
                 this.finish();
             }
         }
-    }
-
-    @Override
-    public void onBackPressed() {
-        moveTaskToBack(true);
     }
 
     public void onLoginSuccess() {
@@ -194,6 +178,17 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         return valid;
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        finish();
     }
 
 }

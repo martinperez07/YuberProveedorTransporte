@@ -28,7 +28,7 @@ import yuber.yuber.R;
 public class SignUpActivity extends AppCompatActivity {
 
     private static final String TAG = "SignUpActivity";
-    private String Ip = "54.191.204.230";
+    private String Ip = "54.213.51.6";
     private String Puerto = "8080";
     private EditText nameText;
     private EditText addressText;
@@ -111,6 +111,8 @@ public class SignUpActivity extends AppCompatActivity {
             obj.put("usuarioCorreo", email);
             obj.put("usuarioCiudad", ciudad);
             obj.put("estado", "OK");
+            obj.put("gananciaTotal", 0);
+            obj.put("porCobrar", 0);
         } catch (JSONException e) {
             Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
         }
@@ -143,7 +145,7 @@ public class SignUpActivity extends AppCompatActivity {
                 }
             }
         });
-        //*****************  Lo redirecciono al MapActivity ********************//
+        //*****************  Lo redirecciono al MainActivity ********************//
 
         new android.os.Handler().postDelayed(
                 new Runnable() {
@@ -186,7 +188,7 @@ public class SignUpActivity extends AppCompatActivity {
             @Override
             public void onSuccess(String response) {
                 if (response.contains("Ok")){
-                    Intent homeIntent = new Intent(getApplicationContext(), MapActivity.class);
+                    Intent homeIntent = new Intent(getApplicationContext(), MainActivity.class);
                     homeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(homeIntent);
                 }else{
@@ -290,4 +292,16 @@ public class SignUpActivity extends AppCompatActivity {
 
         return valid;
     }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        finish();
+    }
+
 }

@@ -32,7 +32,6 @@ public class HistorialAdapter extends RecyclerView.Adapter<HistorialAdapter.MyVi
 
     // Provide a suitable constructor (depends on the kind of dataset)
     public HistorialAdapter(List<Movie> myDataset) {
-
         moviesList = myDataset;
     }
 

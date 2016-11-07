@@ -1,6 +1,8 @@
 package yuber.yuber.activity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
@@ -16,23 +18,31 @@ import yuber.yuber.R;
 
 public class Intro extends AppCompatActivity {
 
+    public static final String MyPREFERENCES = "MyPrefs" ;
+    public static final String EmailKey = "emailKey";
+    public static final String TokenKey = "tokenKey";
+    SharedPreferences sharedpreferences;
 
-    private String Ip = "54.191.204.230";
+    private String Ip = "54.213.51.6";
     private String Puerto = "8080";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_intro);
-
         if (getIntent().getExtras() != null) {
             for (String key : getIntent().getExtras().keySet()) {
                 String value = getIntent().getExtras().getString(key);
             }
         }
         String token = FirebaseInstanceId.getInstance().getToken();
+        //Guardo el token en session
+        SharedPreferences sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+        SharedPreferences.Editor editor = sharedpreferences.edit();
+        editor.putString(TokenKey, token);
+        editor.commit();
+        //Combruebo si ya tengo session.
         TengoSession(token);
-
     }
 
     public void TengoSession(String token){
@@ -45,9 +55,12 @@ public class Intro extends AppCompatActivity {
                 if (response.contains("ERROR")){
                     cambiarALogin();
                 }else{
-                    //guardo token y email
-
-                    cambiarAHome();
+                    SharedPreferences sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+                    SharedPreferences.Editor editor = sharedpreferences.edit();
+                    editor.putString(EmailKey, response);
+                    editor.commit();
+                    //Veo si esta trabajando o no
+                    cambiarAMain();
                 }
             }
             @Override
@@ -63,8 +76,8 @@ public class Intro extends AppCompatActivity {
         });
     }
 
-    public void cambiarAHome(){
-        Intent homeIntent = new Intent(getApplicationContext(), MapActivity.class);
+    public void cambiarAMain(){
+        Intent homeIntent = new Intent(getApplicationContext(), MainActivity.class);
         homeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(homeIntent);
     }
