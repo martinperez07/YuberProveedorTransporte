@@ -3,18 +3,28 @@ package yuber.yuber.activity;
 /**
  * Created by Agustin on 28-Oct-16.
  */
+
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.location.Geocoder;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,11 +38,15 @@ public class HistoricFragment extends Fragment {
     private List<Movie> movieList = new ArrayList<>();
     public static final String MyPREFERENCES = "MyPrefs" ;
     public static final String EmailKey = "emailKey";
-    public static final String JsonHistorial = "JsonHistorial";
+    public static final String HistorialKey = "historialKey";
     SharedPreferences sharedpreferences;
     private String Ip = "54.213.51.6";
     private String Puerto = "8080";
-    private JSONObject mProveedor;
+
+    private JSONObject rec;
+    private JSONObject datos;
+    private JSONObject datos2;
+    private JSONObject datos3;
 
     public HistoricFragment() {
         // Required empty public constructor
@@ -76,78 +90,19 @@ public class HistoricFragment extends Fragment {
     }
 
 
-
-
-
-
-
-    private void prepareMovieData() {
-        Movie movie = new Movie("23/10/2016", "5 km", "$250");
-        movieList.add(movie);
-
-
-        movie = new Movie("20/010/2016", "4 km", "$200");
-        movieList.add(movie);
-
-        movie = new Movie("19/09/2016", "2,5 km", "$125");
-        movieList.add(movie);
-
-        movie = new Movie("19/09/2016", "3,5 km", "$175");
-        movieList.add(movie);
-
-        movie = new Movie("29/07/2016", "1 km", "$50");
-        movieList.add(movie);
-
-        movie = new Movie("19/05/2016", "10 km", "$500");
-        movieList.add(movie);
-
-        movie = new Movie("02/05/2016", "12 km", "$600");
-        movieList.add(movie);
-
-        movie = new Movie("29/03/2016", "3 km", "$150");
-        movieList.add(movie);
-
-        movie = new Movie("19/02/2016", "5 km", "$250");
-        movieList.add(movie);
-
-        movie = new Movie("19/01/2016", "1 km", "$50");
-        movieList.add(movie);
-
-        movie = new Movie("10/01/2016", "2,2km", "$110");
-        movieList.add(movie);
-
-        movie = new Movie("19/07/2015", "2 km", "$100");
-        movieList.add(movie);
-
-        movie = new Movie("01/01/2015", "12 km", "$600");
-        movieList.add(movie);
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-/*
     private void prepareMovieData() {
         SharedPreferences sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
         String email = sharedpreferences.getString(EmailKey, "");
 
-
-        String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Proveedor/ObtenerHistorial/" + email;
+        String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Proveedor/MisReseñasObtenidas/" + email;
         AsyncHttpClient client = new AsyncHttpClient();
         client.get(null, url, new AsyncHttpResponseHandler(){
             @Override
             public void onSuccess(String response) {
-                if (!response.isEmpty()){
-                    agregarItems(response);
-                }
+                SharedPreferences sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+                SharedPreferences.Editor editor = sharedpreferences.edit();
+                editor.putString(HistorialKey, response);
+                editor.commit();
             }
             @Override
             public void onFailure(int statusCode, Throwable error, String content){
@@ -161,37 +116,82 @@ public class HistoricFragment extends Fragment {
             }
         });
 
-    }*/
+        sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+        String Response = sharedpreferences.getString(HistorialKey, "");
+        agregarItems(Response);
+    }
 
     private void agregarItems(String response){
-        //El response tiene el JSON
-        System.out.println(response);
-
-        /*
-        String titulo = "";
-        String subTitulo = "";
-        String fecha = "";
+        //Datos que se van a mostrar en la lista
+        String titulo;
+        String subTitulo;
+        String fecha;
+        //Datos que se consumen del JSON
+        String Comentario;
+        String Puntaje;
+        String Costo;
+        String Distancia;
+        String UbicacionJSON;
+        String Latitud;
+        String Longitud;
+        String instanciaServicioJSON;
+        Movie movie;
         try {
-            mProveedor = new JSONObject(response);
-            //Obtengo los datos para el subtitulo
-            titulo += (String) mProveedor.getString("tipo de servicio");
+            JSONArray arr_strJson = new JSONArray(response);
+            for (int i = 0; i < arr_strJson.length(); ++i) {
+                //rec todos los datos de una instancia servicio
+                rec = arr_strJson.getJSONObject(i);
+                //datos tiene los datos basicos
+                datos = new JSONObject(rec.toString());
+                Comentario = (String) datos.getString("reseñaComentario");
+                Puntaje = (String) datos.getString("reseñaPuntaje");
+                instanciaServicioJSON = (String) datos.getString("instanciaServicio");
+                //datos2 tiene los datos de la instanciaServicio
+                datos2 = new JSONObject(instanciaServicioJSON);
+                Costo = (String) datos2.getString("instanciaServicioCosto");
+                Distancia = (String) datos2.getString("instanciaServicioDistancia");
+                UbicacionJSON = (String) datos2.getString("ubicacionDestino");
+                //datos3 tiene los datos de la ubicacion
+                datos3 = new JSONObject(UbicacionJSON);
+                Latitud = (String) datos3.getString("latitud");
+                Longitud = (String) datos3.getString("longitud");
 
-            //Obtengo los datos para el subtitulo
-            subTitulo = "Distancia: ";
-            subTitulo += (String) mProveedor.getString("distancia");
-            subTitulo += " Costo: $";
-            subTitulo += (String) mProveedor.getString("costo");
+                double lat = Double.parseDouble(Latitud);
+                double lon = Double.parseDouble(Longitud);
+                String dir = getAddressFromLatLng(lat, lon);
+                String[] splitDir = dir.split(" ");
+                String numero = splitDir[splitDir.length - 1];
+                String calle = splitDir[splitDir.length - 2];
+                String Direccion = calle + " " + numero;
 
-            //Obtengo los datos para el subtitulo
-            fecha = (String) mProveedor.getString("fecha");
+                titulo = "Destino: " + Direccion;
+                subTitulo = "Distancia: " + Distancia + "Km   Costo: $" + Costo;
+                fecha = "07/11/2016";
+
+                //Agrego a la lista
+                movie = new Movie(titulo, subTitulo, fecha);
+                movieList.add(movie);
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        //Agrego a la lista
-        Movie movie = new Movie(titulo, subTitulo, fecha);
-        movieList.add(movie);
-        */
+    }
 
+    private String getAddressFromLatLng(double lat, double lon) {
+        Geocoder geocoder = new Geocoder( getActivity() );
+        String address = "";
+        try {
+            address =geocoder
+                    .getFromLocation( lat, lon, 1 )
+                    .get( 0 ).getAddressLine( 0 ) ;
+        } catch (IOException e ) {
+            // this is the line of code that sends a real error message to the  log
+            Log.e("ERROR", "ERROR IN CODE: " + e.toString());
+            // this is the line that prints out the location in the code where the error occurred.
+            e.printStackTrace();
+            return "ERROR_IN_CODE";
+        }
+        return address;
     }
 
 }

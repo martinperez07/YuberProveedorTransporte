@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.BitmapFactory;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
@@ -31,11 +30,9 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 
@@ -46,7 +43,6 @@ import yuber.yuber.R;
 public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         GoogleMap.OnInfoWindowClickListener,
-        GoogleMap.OnMapLongClickListener,
         GoogleMap.OnMapClickListener,
         GoogleMap.OnMarkerClickListener {
 
@@ -150,7 +146,6 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
 
     private void initListeners() {
         googleMap.setOnMarkerClickListener(this);
-        googleMap.setOnMapLongClickListener(this);
         googleMap.setOnInfoWindowClickListener(this);
         googleMap.setOnMapClickListener(this);
     }
@@ -238,47 +233,6 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
 
     @Override
     public void onMapClick(LatLng latLng) {
-/*        MarkerOptions options;
-        switch (mActualState) {
-            case ELIGIENDO_ORIGEN:
-                switchGPS = (Switch) actualFragment.getView().findViewById(R.id.JornadaActiva);
-                switchGPS.setChecked(false);
-                if (mDestinationMarker != null)
-                    mDestinationMarker.remove();
-                options = new MarkerOptions().position(latLng);
-                options.title(getAddressFromLatLng(latLng));
-                options.icon(BitmapDescriptorFactory.defaultMarker());
-                mDestinationMarker = googleMap.addMarker(options);
-                textoUbicacionOrigen.setText(getAddressFromLatLng(latLng));
-                break;
-            case ELIGIENDO_DESTINO:
-                //ELEGIR DESTINO /// AGREGAR CODIGO
-                textoUbicacionDestino = (TextView) actualFragment.getView().findViewById(R.id.textUbicacionDestino);
-                if (mDestinationMarker != null)
-                    mDestinationMarker.remove();
-                options = new MarkerOptions().position(latLng);
-                options.title(getAddressFromLatLng(latLng));
-                options.icon(BitmapDescriptorFactory.defaulter());
-                mDestinationer = googleMap.adder(options);
-                textoUbicacionDestino.setText(getAddressFromLatLng(latLng));
-
-                break;
-            default:
-                break;
-        }
-        */
-    }
-
-    @Override
-    public void onMapLongClick(LatLng latLng) {
-        MarkerOptions options = new MarkerOptions().position( latLng );
-        options.title( getAddressFromLatLng( latLng ) );
-
-        options.icon( BitmapDescriptorFactory.fromBitmap(
-                BitmapFactory.decodeResource( getResources(),
-                        R.mipmap.ic_launcher ) ) );
-
-        googleMap.addMarker( options );
     }
 
     private String getAddressFromLatLng( LatLng latLng ) {
@@ -363,6 +317,5 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
             });
         }
     }
-
 
 }
