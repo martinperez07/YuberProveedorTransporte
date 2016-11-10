@@ -22,7 +22,7 @@ public class MiFirebaseMessagingService extends FirebaseMessagingService {
             if (tituloNotificacion.equals("Nueva solicitud")) {
                 sendBodyToMapFragment(remoteMessage.getData());
             }else if (tituloNotificacion.equals("Tu viaje fue cancelado")) {
-
+                sendBodyToMapFragmentCancelado();
             }else if (tituloNotificacion.equals("")) {
 
             }
@@ -36,9 +36,8 @@ public class MiFirebaseMessagingService extends FirebaseMessagingService {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
-    private void sendBodyToMapFragmentCancelado(String text) {
+    private void sendBodyToMapFragmentCancelado() {
         Intent intent = new Intent("MpFragment.action.VIAJE_CANCELADO");
-        intent.putExtra("DATOS_USUARIOS", text);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 

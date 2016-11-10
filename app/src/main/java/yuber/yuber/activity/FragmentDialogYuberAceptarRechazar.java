@@ -30,7 +30,10 @@ public class FragmentDialogYuberAceptarRechazar extends DialogFragment {
 
     public static final String MyPREFERENCES = "MyPrefs" ;
     public static final String EmailKey = "emailKey";
-    public static final String TokenKey = "tokenKey";
+    public static final String ClienteUbicacionOrigenKey = "ubicacionOrigenKey";
+    public static final String ClienteNombreKey = "clienteNombreKey";
+    public static final String ClienteApellidoKey = "clienteApellidoKey";
+    public static final String ClienteTelefonoKey = "clienteTelefonoKey";
     SharedPreferences sharedpreferences;
 
     public FragmentDialogYuberAceptarRechazar() {
@@ -63,13 +66,26 @@ public class FragmentDialogYuberAceptarRechazar extends DialogFragment {
         double puntaje = 0;
         String instanciaId = "";
         try {
+            String JSONubicacion = mProveedor.getString("ubicacion");
             String JSONcliente = mProveedor.getString("cliente");
             mCliente = new JSONObject(JSONcliente);
-            textoNombreProv.setText(mCliente.getString("usuarioNombre"));
-            textoAppellidoProv.setText(mCliente.getString("usuarioApellido"));
-            textoTelefonoProv.setText(mCliente.getString("usuarioTelefono"));
+            String nombre = mCliente.getString("usuarioNombre");
+            String apellido = mCliente.getString("usuarioApellido");
+            String telefono = mCliente.getString("usuarioTelefono");
+            textoNombreProv.setText(nombre);
+            textoAppellidoProv.setText(apellido);
+            textoTelefonoProv.setText(telefono);
             puntaje = mCliente.getDouble("usuarioPromedioPuntaje");
             instanciaId = mProveedor.getString("instanciaServicioId");
+
+            sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+            SharedPreferences.Editor editor = sharedpreferences.edit();
+            editor.putString(ClienteUbicacionOrigenKey, JSONubicacion);
+            editor.putString(ClienteNombreKey, nombre);
+            editor.putString(ClienteApellidoKey, apellido);
+            editor.putString(ClienteTelefonoKey, telefono);
+            editor.commit();
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
