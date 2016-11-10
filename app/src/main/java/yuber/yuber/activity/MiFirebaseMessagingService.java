@@ -2,10 +2,11 @@ package yuber.yuber.activity;
 
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+
+import java.util.Map;
 
 
 public class MiFirebaseMessagingService extends FirebaseMessagingService {
@@ -14,16 +15,12 @@ public class MiFirebaseMessagingService extends FirebaseMessagingService {
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
-        Log.d(TAG, "From: " + remoteMessage.getFrom());
-        Log.d(TAG, "Message title: " + remoteMessage.getNotification().getTitle() );
-        Log.d(TAG, "Message data body: " + remoteMessage.getNotification().getBody());
-
         if (remoteMessage.getData().size() > 0) {
+            System.out.println("--> Nueva notificacion");
             //ACA VAN LAS CADENAS DE NOTIFICACIONES QUE ME LLEGAN
             String tituloNotificacion = remoteMessage.getNotification().getTitle();
             if (tituloNotificacion.equals("Nueva solicitud")) {
-                Log.d(TAG, "ADENTRO DEL NUEVA SOLICITUD");
-                sendBodyToMapFragment(remoteMessage.getNotification().getBody());
+                sendBodyToMapFragment(remoteMessage.getData());
             }else if (tituloNotificacion.equals("Tu viaje fue cancelado")) {
 
             }else if (tituloNotificacion.equals("")) {
@@ -32,9 +29,10 @@ public class MiFirebaseMessagingService extends FirebaseMessagingService {
         }
     }
 
-    private void sendBodyToMapFragment(String text) {
+    private void sendBodyToMapFragment(Map<String, String> data) {
+        String aux = data.toString();
         Intent intent = new Intent("MpFragment.action.ACEPTAR_RECHAZAR");
-        intent.putExtra("DATOS_USUARIOS", text);
+        intent.putExtra("DATOS_USUARIOS", aux);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 

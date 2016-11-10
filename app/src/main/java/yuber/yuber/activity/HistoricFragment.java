@@ -35,7 +35,7 @@ import yuber.yuber.adapter.HistorialAdapter;
 
 public class HistoricFragment extends Fragment {
 
-    private List<Movie> movieList = new ArrayList<>();
+    private List<Historial> historialList = new ArrayList<>();
     public static final String MyPREFERENCES = "MyPrefs" ;
     public static final String EmailKey = "emailKey";
     public static final String HistorialKey = "historialKey";
@@ -66,29 +66,32 @@ public class HistoricFragment extends Fragment {
         rv.setHasFixedSize(true);
 
         prepareMovieData();
-        HistorialAdapter adapter = new HistorialAdapter(movieList);
+        HistorialAdapter adapter = new HistorialAdapter(historialList);
 
-        //HistorialAdapter adapter = new HistorialAdapter(new String[]{"test one", "test two", "test three", "test four", "test five" , "test six" , "test seven", "test eight", "test nine", "test ten"});
         rv.setAdapter(adapter);
-
         LinearLayoutManager llm = new LinearLayoutManager(getActivity());
         rv.setLayoutManager(llm);
 
         rv.addOnItemTouchListener(new HistoricRecyclerTouchListener(getActivity().getApplicationContext(), rv, new HistoricRecyclerTouchListener.ClickListener() {
             @Override
             public void onClick(View view, int position) {
-                Movie movie = movieList.get(position);
-                Toast.makeText(getActivity().getApplicationContext(), movie.getTitle() + " is selected!", Toast.LENGTH_SHORT).show();
+                Historial historial = historialList.get(position);
+                sendBodyToMapFragment(historial);
             }
-
             @Override
             public void onLongClick(View view, int position) {
-
             }
         }));
         return rootView;
     }
 
+    private void sendBodyToMapFragment(Historial historial) {
+        Bundle args = new Bundle();
+        args.putString("DatosHistorial", historial.toString());
+        FragmentDialogYuberHistorial newFragmentDialog = new FragmentDialogYuberHistorial();
+        newFragmentDialog.setArguments(args);
+        newFragmentDialog.show(getActivity().getSupportFragmentManager(), "TAG");
+    }
 
     private void prepareMovieData() {
         SharedPreferences sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
@@ -122,10 +125,6 @@ public class HistoricFragment extends Fragment {
     }
 
     private void agregarItems(String response){
-        //Datos que se van a mostrar en la lista
-        String titulo;
-        String subTitulo;
-        String fecha;
         //Datos que se consumen del JSON
         String Comentario;
         String Puntaje;
@@ -135,7 +134,8 @@ public class HistoricFragment extends Fragment {
         String Latitud;
         String Longitud;
         String instanciaServicioJSON;
-        Movie movie;
+        String Fecha;
+        Historial historial;
         try {
             JSONArray arr_strJson = new JSONArray(response);
             for (int i = 0; i < arr_strJson.length(); ++i) {
@@ -150,6 +150,7 @@ public class HistoricFragment extends Fragment {
                 datos2 = new JSONObject(instanciaServicioJSON);
                 Costo = (String) datos2.getString("instanciaServicioCosto");
                 Distancia = (String) datos2.getString("instanciaServicioDistancia");
+                Fecha = (String) datos2.getString("instanciaServicioFechaInicio");
                 UbicacionJSON = (String) datos2.getString("ubicacionDestino");
                 //datos3 tiene los datos de la ubicacion
                 datos3 = new JSONObject(UbicacionJSON);
@@ -159,18 +160,10 @@ public class HistoricFragment extends Fragment {
                 double lat = Double.parseDouble(Latitud);
                 double lon = Double.parseDouble(Longitud);
                 String dir = getAddressFromLatLng(lat, lon);
-                String[] splitDir = dir.split(" ");
-                String numero = splitDir[splitDir.length - 1];
-                String calle = splitDir[splitDir.length - 2];
-                String Direccion = calle + " " + numero;
-
-                titulo = "Destino: " + Direccion;
-                subTitulo = "Distancia: " + Distancia + "Km   Costo: $" + Costo;
-                fecha = "07/11/2016";
 
                 //Agrego a la lista
-                movie = new Movie(titulo, subTitulo, fecha);
-                movieList.add(movie);
+                historial = new Historial(Comentario, Puntaje, Costo, Distancia, dir, Fecha);
+                historialList.add(historial);
             }
         } catch (JSONException e) {
             e.printStackTrace();

@@ -12,27 +12,32 @@ import android.widget.TextView;
 import java.util.List;
 
 import yuber.yuber.R;
-import yuber.yuber.activity.Movie;
+import yuber.yuber.activity.Historial;
 
 public class HistorialAdapter extends RecyclerView.Adapter<HistorialAdapter.MyViewHolder> {
 
-    private List<Movie> moviesList;
+    private List<Historial> historialList;
+
+    String titulo;
+    String subTitulo;
+    String fecha;
+    //Datos que se consumen del JSON
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
-        public TextView title, year, genre;
+        public TextView titulo, subtitulo, año;
 
         public MyViewHolder(View view) {
             super(view);
-            title = (TextView) view.findViewById(R.id.title);
-            genre = (TextView) view.findViewById(R.id.genre);
-            year = (TextView) view.findViewById(R.id.year);
+            titulo = (TextView) view.findViewById(R.id.titulo);
+            subtitulo = (TextView) view.findViewById(R.id.subtitulo);
+            año = (TextView) view.findViewById(R.id.año);
         }
     }
 
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public HistorialAdapter(List<Movie> myDataset) {
-        moviesList = myDataset;
+    public HistorialAdapter(List<Historial> myDataset) {
+        historialList = myDataset;
     }
 
     // Create new views (invoked by the layout manager)
@@ -48,16 +53,28 @@ public class HistorialAdapter extends RecyclerView.Adapter<HistorialAdapter.MyVi
         return vh;
     }
 
+
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
-        Movie movie = moviesList.get(position);
-        holder.title.setText(movie.getTitle());
-        holder.genre.setText(movie.getGenre());
-        holder.year.setText(movie.getYear());
+        Historial historial = historialList.get(position);
+
+        String[] splitDir = historial.getDireccion().split(" ");
+        String numero = splitDir[splitDir.length - 1];
+        String calle = splitDir[splitDir.length - 2];
+        String Direccion = calle + " " + numero;
+
+        titulo = "Destino: " + Direccion;
+        subTitulo = "Distancia: " + historial.getDistancia() + "Km   Costo: $" + historial.getCosto();
+        fecha = historial.getFecha();
+
+        holder.titulo.setText(titulo);
+        holder.subtitulo.setText(subTitulo);
+        holder.año.setText(fecha);
     }
 
     @Override
     public int getItemCount() {
-        return moviesList.size();
+        return historialList.size();
     }
+
 }

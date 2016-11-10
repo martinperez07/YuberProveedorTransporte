@@ -279,14 +279,10 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
     protected BroadcastReceiver ActivityDataReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(ACTION_INTENT_ACEPTAR_RECHAZAR.equals(intent.getAction()) ){
-                String jsonUsuario = intent.getStringExtra("DATOS_USUARIOS");
-                mostrarDialAceptarRechazar(jsonUsuario);
-            }
-            // if(ACTION_INTENT2.equals(intent.getAction())) {
-
-            //DO
-            // }
+        if(ACTION_INTENT_ACEPTAR_RECHAZAR.equals(intent.getAction()) ){
+            String jsonUsuario = intent.getStringExtra("DATOS_USUARIOS");
+            mostrarDialAceptarRechazar(jsonUsuario);
+        }
         }
     };
 
