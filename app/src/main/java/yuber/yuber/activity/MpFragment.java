@@ -56,6 +56,7 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
 
     public static final String ACTION_INTENT_ACEPTAR_RECHAZAR = "MpFragment.action.ACEPTAR_RECHAZAR";
     public static final String ACTION_INTENT_CANCELARON_VIAJE = "MpFragment.action.VIAJE_CANCELADO";
+    public static final String ACTION_INTENT_DESTINO_ELEGIDO = "MpFragment.action.DESTINO_ELEGIDO";
 
     private Switch JornadaActiva;
 
@@ -284,6 +285,9 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
             mostrarDialAceptarRechazar(jsonUsuario);
         }else if(ACTION_INTENT_CANCELARON_VIAJE.equals(intent.getAction()) ){
             mostrarDialCancelaronViaje();
+        }else if(ACTION_INTENT_DESTINO_ELEGIDO.equals(intent.getAction()) ){
+            String jsonDestino = intent.getStringExtra("DATOS_DESTINO");
+            mostrarDialIniciarViaje(jsonDestino);
         }
         }
     };
@@ -299,6 +303,14 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
     private void mostrarDialCancelaronViaje(){
         Bundle args = new Bundle();
         FragmentDialogYuberCancelaronViaje newFragmentDialog = new FragmentDialogYuberCancelaronViaje();
+        newFragmentDialog.setArguments(args);
+        newFragmentDialog.show(getActivity().getSupportFragmentManager(), "TAG");
+    }
+
+    private void mostrarDialIniciarViaje(String JSONDestino){
+        Bundle args = new Bundle();
+        args.putString("DatosDestino", JSONDestino);
+        FragmentDialogYuberAceptarViaje newFragmentDialog = new FragmentDialogYuberAceptarViaje();
         newFragmentDialog.setArguments(args);
         newFragmentDialog.show(getActivity().getSupportFragmentManager(), "TAG");
     }

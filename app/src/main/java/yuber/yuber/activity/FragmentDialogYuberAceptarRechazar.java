@@ -115,6 +115,14 @@ public class FragmentDialogYuberAceptarRechazar extends DialogFragment {
                 }
         );
 
+        new Thread(new Runnable() {
+            public void run() {
+                temporizadorProv temp = new temporizadorProv();
+                temp.esperarXsegundos(60);
+                dismiss();
+            }
+        }).start();
+
         return builder.create();
     }
 

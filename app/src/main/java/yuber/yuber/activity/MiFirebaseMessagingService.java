@@ -15,17 +15,18 @@ public class MiFirebaseMessagingService extends FirebaseMessagingService {
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
+        String tituloNotificacion = remoteMessage.getNotification().getTitle();
+        System.out.println("-->Nueva notificacion: " + tituloNotificacion);
+
+        //ACA VAN LAS CADENAS DE NOTIFICACIONES QUE ME LLEGAN
         if (remoteMessage.getData().size() > 0) {
-            System.out.println("--> Nueva notificacion");
-            //ACA VAN LAS CADENAS DE NOTIFICACIONES QUE ME LLEGAN
-            String tituloNotificacion = remoteMessage.getNotification().getTitle();
             if (tituloNotificacion.equals("Nueva solicitud")) {
                 sendBodyToMapFragment(remoteMessage.getData());
-            }else if (tituloNotificacion.equals("Tu viaje fue cancelado")) {
-                sendBodyToMapFragmentCancelado();
-            }else if (tituloNotificacion.equals("")) {
-
+            }else if (tituloNotificacion.equals("Destino elegido")) {
+                sendBodyToMapFragmentComenzarViaje(remoteMessage.getData());
             }
+        } else if (tituloNotificacion.equals("Tu viaje fue cancelado")) {
+            sendBodyToMapFragmentCancelado();
         }
     }
 
@@ -38,6 +39,13 @@ public class MiFirebaseMessagingService extends FirebaseMessagingService {
 
     private void sendBodyToMapFragmentCancelado() {
         Intent intent = new Intent("MpFragment.action.VIAJE_CANCELADO");
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+    private void sendBodyToMapFragmentComenzarViaje(Map<String, String> data) {
+        String aux = data.toString();
+        Intent intent = new Intent("MpFragment.action.DESTINO_ELEGIDO");
+        intent.putExtra("DATOS_DESTINO", aux);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
