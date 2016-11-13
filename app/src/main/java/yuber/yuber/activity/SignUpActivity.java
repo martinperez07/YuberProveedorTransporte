@@ -187,7 +187,7 @@ public class SignUpActivity extends AppCompatActivity {
         client.post(null, url, entity, "application/json", new AsyncHttpResponseHandler(){
             @Override
             public void onSuccess(String response) {
-                if (response.contains("Ok")){
+                if (response.contains("true")){
                     Intent homeIntent = new Intent(getApplicationContext(), MainActivity.class);
                     homeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(homeIntent);

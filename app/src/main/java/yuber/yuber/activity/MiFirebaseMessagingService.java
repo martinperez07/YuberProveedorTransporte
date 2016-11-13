@@ -1,6 +1,8 @@
 package yuber.yuber.activity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v4.content.LocalBroadcastManager;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
@@ -12,21 +14,29 @@ import java.util.Map;
 public class MiFirebaseMessagingService extends FirebaseMessagingService {
 
     private static final String TAG = "MESSAGES";
+    public static final String EstoyTrabajando = "EstoyTrabajando";
+    public static final String EnViaje = "enViaje";
+    public static final String MyPREFERENCES = "MyPrefs" ;
+    SharedPreferences sharedpreferences;
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
-        String tituloNotificacion = remoteMessage.getNotification().getTitle();
-        System.out.println("-->Nueva notificacion: " + tituloNotificacion);
+        SharedPreferences sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+        String tabajando = sharedpreferences.getString(EstoyTrabajando, "");
+        String enViaje = sharedpreferences.getString(EnViaje, "");
 
-        //ACA VAN LAS CADENAS DE NOTIFICACIONES QUE ME LLEGAN
-        if (remoteMessage.getData().size() > 0) {
-            if (tituloNotificacion.equals("Nueva solicitud")) {
-                sendBodyToMapFragment(remoteMessage.getData());
-            }else if (tituloNotificacion.equals("Destino elegido")) {
-                sendBodyToMapFragmentComenzarViaje(remoteMessage.getData());
+        if (tabajando.contains("true")) {
+            if (enViaje.contains("false")) {
+                String tituloNotificacion = remoteMessage.getNotification().getTitle();
+                //ACA VAN LAS CADENAS DE NOTIFICACIONES QUE ME LLEGAN
+                if (tituloNotificacion.equals("Nueva solicitud")) {
+                    sendBodyToMapFragment(remoteMessage.getData());
+                } else if (tituloNotificacion.equals("Destino elegido")) {
+                    sendBodyToMapFragmentComenzarViaje(remoteMessage.getData());
+                } else if (tituloNotificacion.equals("Solicitud cancelada")) {
+                    sendBodyToMapFragmentCancelado();
+                }
             }
-        } else if (tituloNotificacion.equals("Tu viaje fue cancelado")) {
-            sendBodyToMapFragmentCancelado();
         }
     }
 

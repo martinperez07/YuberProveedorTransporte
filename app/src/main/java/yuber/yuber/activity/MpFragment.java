@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Geocoder;
 import android.location.Location;
@@ -19,6 +20,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.Switch;
 import android.widget.Toast;
 
@@ -54,9 +56,18 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
     private Location mCurrentLocation;
     private Marker mDestinationMarker;
 
+    //NOTIFICACIONES
     public static final String ACTION_INTENT_ACEPTAR_RECHAZAR = "MpFragment.action.ACEPTAR_RECHAZAR";
     public static final String ACTION_INTENT_CANCELARON_VIAJE = "MpFragment.action.VIAJE_CANCELADO";
     public static final String ACTION_INTENT_DESTINO_ELEGIDO = "MpFragment.action.DESTINO_ELEGIDO";
+
+    //BOTONES
+    public static final String ACTION_PRENDE_INICIAR = "MpFragment.action.PRENDE_INICIAR";
+    public static final String ACTION_PRENDE_FIN = "MpFragment.action.PRENDE_FIN";
+    public static final String ACTION_APAGA_INICIAR = "MpFragment.action.APAGA_INICIAR";
+    public static final String ACTION_APAGA_FIN = "MpFragment.action.APAGA_FIN";
+
+
 
     private Switch JornadaActiva;
 
@@ -67,8 +78,17 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
     ProgressDialog prgDialog;
     Fragment topFragment = null;
 
+    public static final String MyPREFERENCES = "MyPrefs" ;
+    public static final String ClienteInstanciaServicioKey = "clienteInstanciaServicioKey";
+    public static final String ClienteUbicacionDestinoKey = "ubicacionDestinoKey";
+    public static final String EnViaje = "enViaje";
+    SharedPreferences sharedpreferences;
+
     private String Ip = "54.213.51.6";
     private String Puerto = "8080";
+
+    private Button IniciarViaje;
+    private Button FinViaje;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -100,12 +120,113 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
         fragmentTransaction.replace(R.id.FlashBarLayout, topFragment);
         fragmentTransaction.commit();
 
-
         IntentFilter filter = new IntentFilter(ACTION_INTENT_ACEPTAR_RECHAZAR);
-        // filter.addAction(ACTION_INTENT2);
+        filter.addAction(ACTION_INTENT_CANCELARON_VIAJE);
+        filter.addAction(ACTION_INTENT_DESTINO_ELEGIDO);
+        filter.addAction(ACTION_PRENDE_INICIAR);
+
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(ActivityDataReceiver, filter);
 
+        IniciarViaje = (Button) v.findViewById(R.id.IniciarViaje);
+        IniciarViaje.setOnClickListener(crearBotonIniciar());
+
+        FinViaje = (Button) v.findViewById(R.id.FinViaje);
+        FinViaje.setOnClickListener(crearBotonFin());
+
         return v;
+    }
+
+    public void ocultarIV(){
+        IniciarViaje.setVisibility(View.GONE);
+    }
+
+    public void ocultarFV(){
+        FinViaje.setVisibility(View.GONE);
+    }
+
+    public void mostrarIV(){
+        IniciarViaje.setVisibility(View.VISIBLE);
+    }
+
+    public void mostrarFV(){
+        FinViaje.setVisibility(View.VISIBLE);
+    }
+
+    private View.OnClickListener crearBotonIniciar(){
+        View.OnClickListener clickListtener = new View.OnClickListener() {
+            public void onClick(View v) {
+                //Se llama a comenzar viaje
+                comenzarViaje();
+                //Cambio de botones
+                ocultarIV();
+                mostrarFV();
+            }
+        };
+        return clickListtener;
+    }
+
+    private View.OnClickListener crearBotonFin(){
+        View.OnClickListener clickListtener = new View.OnClickListener() {
+            public void onClick(View v) {
+                //Se llama a fin servicio
+                terminarViaje();
+
+                ocultarFV();
+                sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+                SharedPreferences.Editor editor = sharedpreferences.edit();
+                editor.putString(EnViaje, "false");
+                editor.commit();
+                //Se llama a calificar cliente
+                mostrarDialCalificacion();
+            }
+        };
+        return clickListtener;
+    }
+
+    public void comenzarViaje(){
+        SharedPreferences sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+        String instanciaID = sharedpreferences.getString(ClienteInstanciaServicioKey, "");
+
+        String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Proveedor/IniciarServicio/" + instanciaID;
+        AsyncHttpClient client = new AsyncHttpClient();
+        client.get(null, url, new AsyncHttpResponseHandler(){
+            @Override
+            public void onSuccess(String response) {
+            }
+            @Override
+            public void onFailure(int statusCode, Throwable error, String content){
+                if(statusCode == 404){
+                    Toast.makeText(getActivity().getApplicationContext(), "Requested resource not found", Toast.LENGTH_LONG).show();
+                }else if(statusCode == 500){
+                    Toast.makeText(getActivity().getApplicationContext(), "Something went wrong at server end", Toast.LENGTH_LONG).show();
+                }else{
+                    Toast.makeText(getActivity().getApplicationContext(), "Unexpected Error occured! [Most common Error: Device might not be connected to Internet or remote server is not up and running]", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+    }
+
+    public void terminarViaje(){
+        SharedPreferences sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+        String instanciaID = sharedpreferences.getString(ClienteInstanciaServicioKey, "");
+
+        String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Proveedor/FinServicio/" + instanciaID + ",5";
+        AsyncHttpClient client = new AsyncHttpClient();
+        client.get(null, url, new AsyncHttpResponseHandler(){
+            @Override
+            public void onSuccess(String response) {
+            }
+            @Override
+            public void onFailure(int statusCode, Throwable error, String content){
+                if(statusCode == 404){
+                    Toast.makeText(getActivity().getApplicationContext(), "Requested resource not found", Toast.LENGTH_LONG).show();
+                }else if(statusCode == 500){
+                    Toast.makeText(getActivity().getApplicationContext(), "Something went wrong at server end", Toast.LENGTH_LONG).show();
+                }else{
+                    Toast.makeText(getActivity().getApplicationContext(), "Unexpected Error occured! [Most common Error: Device might not be connected to Internet or remote server is not up and running]", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
     }
 
     @Override
@@ -114,6 +235,9 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
         LatLng myLocatLatLng;
         LatLng mdeoLatLng = new LatLng(-34, -56);
         Location myLocation = null;
+
+
+
 
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -280,15 +404,28 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
     protected BroadcastReceiver ActivityDataReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-        if(ACTION_INTENT_ACEPTAR_RECHAZAR.equals(intent.getAction()) ){
-            String jsonUsuario = intent.getStringExtra("DATOS_USUARIOS");
-            mostrarDialAceptarRechazar(jsonUsuario);
-        }else if(ACTION_INTENT_CANCELARON_VIAJE.equals(intent.getAction()) ){
-            mostrarDialCancelaronViaje();
-        }else if(ACTION_INTENT_DESTINO_ELEGIDO.equals(intent.getAction()) ){
-            String jsonDestino = intent.getStringExtra("DATOS_DESTINO");
-            mostrarDialIniciarViaje(jsonDestino);
-        }
+            if(ACTION_INTENT_ACEPTAR_RECHAZAR.equals(intent.getAction()) ){
+                String jsonUsuario = intent.getStringExtra("DATOS_USUARIOS");
+                mostrarDialAceptarRechazar(jsonUsuario);
+            }else if(ACTION_INTENT_CANCELARON_VIAJE.equals(intent.getAction()) ){
+                mostrarDialCancelaronViaje();
+            }else if(ACTION_INTENT_DESTINO_ELEGIDO.equals(intent.getAction()) ){
+                String jsonDestino = intent.getStringExtra("DATOS_DESTINO");
+                sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+                SharedPreferences.Editor editor = sharedpreferences.edit();
+                editor.putString(ClienteUbicacionDestinoKey, jsonDestino);
+                editor.commit();
+                //pongo el punto en el mapa y trazo la ruta
+                Toast.makeText(getActivity().getApplicationContext(), "pongo el punto en el mapa y trazo la ruta", Toast.LENGTH_LONG).show();
+            }else if(ACTION_PRENDE_INICIAR.equals(intent.getAction())) {
+                mostrarIV();
+            }else if(ACTION_PRENDE_FIN.equals(intent.getAction())) {
+                mostrarFV();
+            }else if(ACTION_APAGA_FIN.equals(intent.getAction())) {
+                ocultarFV();
+            }else if(ACTION_APAGA_INICIAR.equals(intent.getAction())) {
+                ocultarIV();
+            }
         }
     };
 
@@ -307,21 +444,30 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
         newFragmentDialog.show(getActivity().getSupportFragmentManager(), "TAG");
     }
 
-    private void mostrarDialIniciarViaje(String JSONDestino){
+    private void mostrarDialCalificacion(){
         Bundle args = new Bundle();
-        args.putString("DatosDestino", JSONDestino);
-        FragmentDialogYuberAceptarViaje newFragmentDialog = new FragmentDialogYuberAceptarViaje();
+        FragmentDialogYuberCalificar newFragmentDialog = new FragmentDialogYuberCalificar();
         newFragmentDialog.setArguments(args);
         newFragmentDialog.show(getActivity().getSupportFragmentManager(), "TAG");
     }
 
     public void actualizarCoordenadas(String email) {
         if (mCurrentLocation != null){
+            SharedPreferences sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+            String enViaje = sharedpreferences.getString(EnViaje, "");
+
             String latitud = String.valueOf(mCurrentLocation.getLatitude());
             String longitud = String.valueOf(mCurrentLocation.getLongitude());
+            String instanciaID = "-1";
+            if (enViaje.contains("true")) {
+                instanciaID = sharedpreferences.getString(ClienteInstanciaServicioKey, "");
+                enViaje = "True";
+            }else{
+                enViaje = "False";
+            }
             //OBTENGO MIS COORDENADAS Y LAS PASO A STRING
             //REGISTRO EN LA BD
-            String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Proveedor/ActualizarCoordenadas/" + email + "," + latitud + "," + longitud;
+            String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Proveedor/ActualizarCoordenadas/" + email + "," + latitud + "," + longitud + "," + enViaje + "," + instanciaID;
             AsyncHttpClient client = new AsyncHttpClient();
             client.get(null, url, new AsyncHttpResponseHandler(){
                 @Override

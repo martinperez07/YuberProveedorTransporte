@@ -25,6 +25,7 @@ public class MapJornadaActivaFragment extends Fragment {
     public static final String MyPREFERENCES = "MyPrefs" ;
     public static final String EmailKey = "emailKey";
     public static final String EstoyTrabajando = "EstoyTrabajando";
+    public static final String EnViaje = "enViaje";
     SharedPreferences sharedpreferences;
 
     private String Ip = "54.213.51.6";
@@ -59,12 +60,21 @@ public class MapJornadaActivaFragment extends Fragment {
             public void onCheckedChanged(CompoundButton cb, boolean on) {
                 SharedPreferences sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
                 String email = sharedpreferences.getString(EmailKey, "");
+                String enViaje = sharedpreferences.getString(EnViaje, "");
                 if (on) {
                     //VOY A COMENZAR A TRABAJAR
+                    sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+                    SharedPreferences.Editor editor = sharedpreferences.edit();
+                    editor.putString(EstoyTrabajando, "true");
+                    editor.commit();
                     comenzarATrabajar(email);
                 } else {
-                    //DEJA DE TRABAJAR
-                    dejarDeTrabajar(email);
+                    //DEJA DE TRABAJAR enViaje
+                    if (enViaje.contains("false")) {
+                        dejarDeTrabajar(email);
+                    }else{
+                        Toast.makeText(getActivity().getApplicationContext(), "No puede dejar de trabajar mientras estas brindando un servicio", Toast.LENGTH_LONG).show();
+                    }
                 }
             }
         });
@@ -96,8 +106,16 @@ public class MapJornadaActivaFragment extends Fragment {
     public void guardarDato(String dato){
         if (dato.contains("true")){
             switchJornada.setChecked(true);
+            SharedPreferences sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+            SharedPreferences.Editor editor = sharedpreferences.edit();
+            editor.putString(EstoyTrabajando, dato);
+            editor.commit();
         }else{
             switchJornada.setChecked(false);
+            SharedPreferences sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+            SharedPreferences.Editor editor = sharedpreferences.edit();
+            editor.putString(EstoyTrabajando, dato);
+            editor.commit();
         }
     }
 

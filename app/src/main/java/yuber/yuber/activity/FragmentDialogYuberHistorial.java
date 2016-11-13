@@ -69,7 +69,6 @@ public class FragmentDialogYuberHistorial extends DialogFragment {
         ratingBarPuntaje.setRating(((float) puntaje));
 
         Button botonAceptar = (Button) v.findViewById(R.id.boton_aceptar_yuber);
-
         botonAceptar.setOnClickListener(
                 new View.OnClickListener() {
                     @Override

@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements FragmentDrawer.Fr
     public static final String MyPREFERENCES = "MyPrefs" ;
     public static final String EmailKey = "emailKey";
     public static final String TokenKey = "tokenKey";
+    public static final String EnViaje = "enViaje";
     SharedPreferences sharedpreferences;
 
 
@@ -74,11 +75,9 @@ public class MainActivity extends AppCompatActivity implements FragmentDrawer.Fr
             }
         }).start();
 
+
         displayView(0);
     }
-
-
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -97,7 +96,12 @@ public class MainActivity extends AppCompatActivity implements FragmentDrawer.Fr
         if (id == R.id.action_cerrar_sesion) {
             SharedPreferences sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
             String email = sharedpreferences.getString(EmailKey, "");
-            CerrarSesion(email);
+            String enViaje = sharedpreferences.getString(EnViaje, "");
+            if (enViaje.contains("true")) {
+                CerrarSesion(email);
+            }else {
+                Toast.makeText(getApplicationContext(), "No puede cerrar sesion mientras estas brindando un servicio", Toast.LENGTH_LONG).show();
+            }
             return true;
         }
 
@@ -106,46 +110,51 @@ public class MainActivity extends AppCompatActivity implements FragmentDrawer.Fr
 
     public void CerrarSesion(String email){
         SharedPreferences sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
-        String token = sharedpreferences.getString(TokenKey, "");
-        MapJornadaActivaFragment m = new MapJornadaActivaFragment();
-        m.dejarDeTrabajar(email);
-        String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Proveedor/Logout";
-        JSONObject obj = new JSONObject();
-        try {
-            obj.put("correo", email);
-            obj.put("password","");
-            obj.put("deviceId",token);
-        } catch (JSONException e) {
-            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
-        }
-        AsyncHttpClient client = new AsyncHttpClient();
-        ByteArrayEntity entity = null;
-        try {
-            entity = new ByteArrayEntity(obj.toString().getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
-        }
-        entity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
-        RequestHandle Rq = client.post(null, url, entity, "application/json", new AsyncHttpResponseHandler(){
-            @Override
-            public void onSuccess(String response) {
-                if (response.contains("true") ){
-                    cambiarALogin();
-                }else{
-                    Toast.makeText(getApplicationContext(), "No se pudo cerrar la sesión. Vuelva a intentar.", Toast.LENGTH_LONG).show();
-                }
+        String enViaje = sharedpreferences.getString(EnViaje, "");
+        if (enViaje.contains("false")) {
+            String token = sharedpreferences.getString(TokenKey, "");
+            MapJornadaActivaFragment m = new MapJornadaActivaFragment();
+            m.dejarDeTrabajar(email);
+            String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Proveedor/Logout";
+            JSONObject obj = new JSONObject();
+            try {
+                obj.put("correo", email);
+                obj.put("password","");
+                obj.put("deviceId",token);
+            } catch (JSONException e) {
+                Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
             }
-            @Override
-            public void onFailure(int statusCode, Throwable error, String content){
-                if(statusCode == 404){
-                    Toast.makeText(getApplicationContext(), "Requested resource not found", Toast.LENGTH_LONG).show();
-                }else if(statusCode == 500){
-                    Toast.makeText(getApplicationContext(), "Something went wrong at server end", Toast.LENGTH_LONG).show();
-                }else{
-                    Toast.makeText(getApplicationContext(), "Unexpected Error occured! [Most common Error: Device might not be connected to Internet or remote server is not up and running]", Toast.LENGTH_LONG).show();
-                }
+            AsyncHttpClient client = new AsyncHttpClient();
+            ByteArrayEntity entity = null;
+            try {
+                entity = new ByteArrayEntity(obj.toString().getBytes("UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
             }
-        });
+            entity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
+            RequestHandle Rq = client.post(null, url, entity, "application/json", new AsyncHttpResponseHandler(){
+                @Override
+                public void onSuccess(String response) {
+                    if (response.contains("true") ){
+                        cambiarALogin();
+                    }else{
+                        Toast.makeText(getApplicationContext(), "No se pudo cerrar la sesión. Vuelva a intentar.", Toast.LENGTH_LONG).show();
+                    }
+                }
+                @Override
+                public void onFailure(int statusCode, Throwable error, String content){
+                    if(statusCode == 404){
+                        Toast.makeText(getApplicationContext(), "Requested resource not found", Toast.LENGTH_LONG).show();
+                    }else if(statusCode == 500){
+                        Toast.makeText(getApplicationContext(), "Something went wrong at server end", Toast.LENGTH_LONG).show();
+                    }else{
+                        Toast.makeText(getApplicationContext(), "Unexpected Error occured! [Most common Error: Device might not be connected to Internet or remote server is not up and running]", Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
+        }else{
+            Toast.makeText(getApplicationContext(), "No puede dejar cerrar la sesión mientras estas brindando un servicio", Toast.LENGTH_LONG).show();
+        }
     }
 
     public void cambiarALogin(){

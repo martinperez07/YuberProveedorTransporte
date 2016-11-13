@@ -2,10 +2,12 @@ package yuber.yuber.activity;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,6 +36,8 @@ public class FragmentDialogYuberAceptarRechazar extends DialogFragment {
     public static final String ClienteNombreKey = "clienteNombreKey";
     public static final String ClienteApellidoKey = "clienteApellidoKey";
     public static final String ClienteTelefonoKey = "clienteTelefonoKey";
+    public static final String ClienteInstanciaServicioKey = "clienteInstanciaServicioKey";
+    public static final String EnViaje = "enViaje";
     SharedPreferences sharedpreferences;
 
     public FragmentDialogYuberAceptarRechazar() {
@@ -77,13 +81,13 @@ public class FragmentDialogYuberAceptarRechazar extends DialogFragment {
             textoTelefonoProv.setText(telefono);
             puntaje = mCliente.getDouble("usuarioPromedioPuntaje");
             instanciaId = mProveedor.getString("instanciaServicioId");
-
             sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
             SharedPreferences.Editor editor = sharedpreferences.edit();
             editor.putString(ClienteUbicacionOrigenKey, JSONubicacion);
             editor.putString(ClienteNombreKey, nombre);
             editor.putString(ClienteApellidoKey, apellido);
             editor.putString(ClienteTelefonoKey, telefono);
+            editor.putString(ClienteInstanciaServicioKey, instanciaId);
             editor.commit();
 
         } catch (JSONException e) {
@@ -93,14 +97,23 @@ public class FragmentDialogYuberAceptarRechazar extends DialogFragment {
         ratingBarPuntajeProv.setRating(((float) puntaje));
         Button botonAceptar = (Button) v.findViewById(R.id.boton_aceptar_yuber);
         Button botonCancelar = (Button) v.findViewById(R.id.boton_cancelar_yuber);
-
         final String finalInstanciaId = instanciaId;
         botonAceptar.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        //seteo la variable global
+                        sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+                        SharedPreferences.Editor editor = sharedpreferences.edit();
+                        editor.putString(EnViaje, "true");
+                        editor.commit();
                         //envio al server que acepto el viaje
                         AceptarServicio(finalInstanciaId);
+                        //aparece boton
+                        Intent intent = new Intent("MpFragment.action.APAGA_FIN");
+                        LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
+                        intent = new Intent("MpFragment.action.PRENDE_INICIAR");
+                        LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
                         dismiss();
                     }
                 }

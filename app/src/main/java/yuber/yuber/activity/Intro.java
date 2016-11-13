@@ -21,6 +21,7 @@ public class Intro extends AppCompatActivity {
     public static final String MyPREFERENCES = "MyPrefs" ;
     public static final String EmailKey = "emailKey";
     public static final String TokenKey = "tokenKey";
+    public static final String EnViaje = "enViaje";
     SharedPreferences sharedpreferences;
 
     private String Ip = "54.213.51.6";
@@ -40,8 +41,10 @@ public class Intro extends AppCompatActivity {
         SharedPreferences sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
         SharedPreferences.Editor editor = sharedpreferences.edit();
         editor.putString(TokenKey, token);
+        editor.putString(EnViaje, "false");
         editor.commit();
         //Combruebo si ya tengo session.
+
         TengoSession(token);
     }
 

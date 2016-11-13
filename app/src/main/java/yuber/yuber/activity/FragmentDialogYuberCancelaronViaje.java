@@ -22,6 +22,7 @@ public class FragmentDialogYuberCancelaronViaje extends DialogFragment {
     public static final String ClienteNombreKey = "clienteNombreKey";
     public static final String ClienteApellidoKey = "clienteApellidoKey";
     public static final String ClienteTelefonoKey = "clienteTelefonoKey";
+    public static final String EnViaje = "enViaje";
     SharedPreferences sharedpreferences;
 
     public FragmentDialogYuberCancelaronViaje() {
@@ -48,6 +49,15 @@ public class FragmentDialogYuberCancelaronViaje extends DialogFragment {
         String Telefono = sharedpreferences.getString(ClienteTelefonoKey, "");
 
         texto.setText(Nombre + " " + Apellido + " cancelo el viaje");
+
+        //Seteo la variable global
+        sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+        SharedPreferences.Editor editor = sharedpreferences.edit();
+        editor.putString(EnViaje, "false");
+        editor.commit();
+        //saco el boton
+        Button FinViaje = (Button) getActivity().findViewById(R.id.FinViaje);
+        FinViaje.setVisibility(View.GONE);
 
         Button botonAceptar = (Button) v.findViewById(R.id.boton_aceptar_yuber);
         botonAceptar.setOnClickListener(

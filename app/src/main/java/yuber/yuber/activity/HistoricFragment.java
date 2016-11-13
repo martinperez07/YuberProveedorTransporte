@@ -141,17 +141,20 @@ public class HistoricFragment extends Fragment {
             for (int i = 0; i < arr_strJson.length(); ++i) {
                 //rec todos los datos de una instancia servicio
                 rec = arr_strJson.getJSONObject(i);
+
                 //datos tiene los datos basicos
                 datos = new JSONObject(rec.toString());
                 Comentario = (String) datos.getString("reseñaComentario");
                 Puntaje = (String) datos.getString("reseñaPuntaje");
                 instanciaServicioJSON = (String) datos.getString("instanciaServicio");
+
                 //datos2 tiene los datos de la instanciaServicio
                 datos2 = new JSONObject(instanciaServicioJSON);
                 Costo = (String) datos2.getString("instanciaServicioCosto");
                 Distancia = (String) datos2.getString("instanciaServicioDistancia");
                 Fecha = (String) datos2.getString("instanciaServicioFechaInicio");
-                UbicacionJSON = (String) datos2.getString("ubicacionDestino");
+                UbicacionJSON = (String) datos2.getString("ubicacion");
+
                 //datos3 tiene los datos de la ubicacion
                 datos3 = new JSONObject(UbicacionJSON);
                 Latitud = (String) datos3.getString("latitud");
@@ -159,11 +162,12 @@ public class HistoricFragment extends Fragment {
 
                 double lat = Double.parseDouble(Latitud);
                 double lon = Double.parseDouble(Longitud);
-                String dir = getAddressFromLatLng(lat, lon);
 
+                String dir = getAddressFromLatLng(lat, lon);
                 //Agrego a la lista
                 historial = new Historial(Comentario, Puntaje, Costo, Distancia, dir, Fecha);
                 historialList.add(historial);
+
             }
         } catch (JSONException e) {
             e.printStackTrace();
