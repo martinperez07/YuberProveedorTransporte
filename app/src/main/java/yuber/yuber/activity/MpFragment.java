@@ -306,9 +306,13 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
     }
 
     private void initCamera(Location location) {
-        //improvisacion para ver si anda con ubicacio inventada
-        LatLng myActualLatLng = new LatLng( location.getLatitude(),location.getLongitude() );//new LatLng(-34.9, -56.16);
-        //
+        LatLng myActualLatLng;
+        //si no esta el GPS prendido va a la ubicacion (-34.9, -56.16)
+        if(location!= null)
+            myActualLatLng = new LatLng( location.getLatitude(),location.getLongitude() );
+        else
+            myActualLatLng = new LatLng(-34.9, -56.16);
+
         CameraPosition position = CameraPosition.builder()
                 .target(myActualLatLng)
                 .zoom(16f)
