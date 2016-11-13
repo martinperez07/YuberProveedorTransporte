@@ -6,17 +6,20 @@ public class Historial {
     private String Puntaje;
     private String Costo;
     private String Distancia;
-    private String Direccion;
+    private String DireccionO;
+    private String DireccionD;
     private String Fecha;
+
     public Historial() {
     }
 
-    public Historial(String comentario, String puntaje, String costo, String distancia, String direccion, String fecha) {
+    public Historial(String comentario, String puntaje, String costo, String distancia, String direccionO,String direccionD, String fecha) {
         Comentario = comentario;
         Puntaje = puntaje;
         Costo = costo;
         Distancia = distancia;
-        Direccion = direccion;
+        DireccionO = direccionO;
+        DireccionD = direccionD;
         Fecha = fecha;
     }
 
@@ -52,12 +55,20 @@ public class Historial {
         Distancia = distancia;
     }
 
-    public String getDireccion() {
-        return Direccion;
+    public String getDireccionOrigen() {
+        return DireccionO;
     }
 
-    public void setDireccion(String direccion) {
-        Direccion = direccion;
+    public void setDireccionOrigen(String direccion) {
+        DireccionO = direccion;
+    }
+
+    public String getDireccionDestino() {
+        return DireccionD;
+    }
+
+    public void setDireccionDestino(String direccion) {
+        DireccionD = direccion;
     }
 
     public String getFecha() {
@@ -76,7 +87,8 @@ public class Historial {
                 ",\"Costo\":\"" + Costo + '\"' +
                 ",\"Distancia\":\"" + Distancia + '\"' +
                 ",\"Fecha\":\"" + Fecha + '\"' +
-                ",\"Direccion\":\"" + Direccion + '\"' +
+                ",\"DireccionO\":\"" + DireccionO + '\"' +
+                ",\"DireccionD\":\"" + DireccionD + '\"' +
                 '}';
     }
 

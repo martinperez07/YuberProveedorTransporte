@@ -131,8 +131,10 @@ public class HistoricFragment extends Fragment {
         String Costo;
         String Distancia;
         String UbicacionJSON;
-        String Latitud;
-        String Longitud;
+        String LatitudO;
+        String LongitudO;
+        String LatitudD;
+        String LongitudD;
         String instanciaServicioJSON;
         String Fecha;
         Historial historial;
@@ -153,19 +155,37 @@ public class HistoricFragment extends Fragment {
                 Costo = (String) datos2.getString("instanciaServicioCosto");
                 Distancia = (String) datos2.getString("instanciaServicioDistancia");
                 Fecha = (String) datos2.getString("instanciaServicioFechaInicio");
-                UbicacionJSON = (String) datos2.getString("ubicacion");
 
+                UbicacionJSON = (String) datos2.getString("ubicacion");
                 //datos3 tiene los datos de la ubicacion
                 datos3 = new JSONObject(UbicacionJSON);
-                Latitud = (String) datos3.getString("latitud");
-                Longitud = (String) datos3.getString("longitud");
+                LatitudO = (String) datos3.getString("latitud");
+                LongitudO = (String) datos3.getString("longitud");
 
-                double lat = Double.parseDouble(Latitud);
-                double lon = Double.parseDouble(Longitud);
+                UbicacionJSON = (String) datos2.getString("ubicacionDestino");
+                //datos3 tiene los datos de la ubicacion
+                datos3 = new JSONObject(UbicacionJSON);
+                LatitudD = (String) datos3.getString("latitud");
+                LongitudD = (String) datos3.getString("longitud");
 
-                String dir = getAddressFromLatLng(lat, lon);
+                double lat;
+                double lon;
+
+                lat = Double.parseDouble(LatitudO);
+                lon = Double.parseDouble(LongitudO);
+                String dirO = "-";
+                if ((lat != 0)&&(lon != 0)){
+                    dirO = getAddressFromLatLng(lat, lon);
+                }
+
+                lat = Double.parseDouble(LatitudD);
+                lon = Double.parseDouble(LongitudD);
+                String dirD = "-";
+                if ((lat != 0)&&(lon != 0)){
+                    dirD = getAddressFromLatLng(lat, lon);
+                }
                 //Agrego a la lista
-                historial = new Historial(Comentario, Puntaje, Costo, Distancia, dir, Fecha);
+                historial = new Historial(Comentario, Puntaje, Costo, Distancia, dirO, dirD, Fecha);
                 historialList.add(historial);
 
             }

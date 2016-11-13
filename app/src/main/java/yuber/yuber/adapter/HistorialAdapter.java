@@ -58,7 +58,7 @@ public class HistorialAdapter extends RecyclerView.Adapter<HistorialAdapter.MyVi
     public void onBindViewHolder(MyViewHolder holder, int position) {
         Historial historial = historialList.get(position);
 
-        String[] splitDir = historial.getDireccion().split(" ");
+        String[] splitDir = historial.getDireccionOrigen().split(" ");
         String numero = splitDir[splitDir.length - 1];
         String calle = splitDir[splitDir.length - 2];
         String Direccion = calle + " " + numero;

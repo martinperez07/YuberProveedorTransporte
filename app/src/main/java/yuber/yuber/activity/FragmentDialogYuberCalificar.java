@@ -94,15 +94,23 @@ public class FragmentDialogYuberCalificar extends DialogFragment {
         String puntaje;
         float number = ratingBarPuntaje.getRating();
         int punt = new Float(number).intValue();
-        puntaje = String.valueOf(punt);
+
+        puntaje = String.valueOf(number);
         String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Cliente/PuntuarCliente/" + puntaje + ",Sin comentario," + instanciaID;
+
+
+        System.out.println("--------------->" + url);
+        System.out.println("--------------->" + instanciaID);
+
         AsyncHttpClient client = new AsyncHttpClient();
         client.get(null, url, new AsyncHttpResponseHandler(){
             @Override
             public void onSuccess(String response) {
+                System.out.println("--------------->Success");
             }
             @Override
             public void onFailure(int statusCode, Throwable error, String content){
+                System.out.println("--------------->Fail");
             }
         });
     }

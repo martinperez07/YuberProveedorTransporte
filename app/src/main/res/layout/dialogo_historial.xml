@@ -6,7 +6,6 @@
     android:paddingTop="4dp"
     android:paddingBottom="5dp">
 
-
     <LinearLayout
         android:id="@+id/layout_vertical_dialogo_historial"
         android:orientation="vertical"
@@ -55,7 +54,6 @@
                 android:textColor="@color/textColorPrimaryBlack" />
         </LinearLayout>
 
-
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
@@ -80,8 +78,32 @@
                 android:textColor="@color/textColorPrimaryBlack" />
         </LinearLayout>
 
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="@dimen/normal_padding"
+            android:weightSum="2">
+
+            <TextView
+                android:text="Origen"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/textColorPrimaryBlack" />
+
+            <TextView
+                android:id="@+id/text_hist_origen_variable"
+                android:text="$$"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="right"
+                android:textColor="@color/textColorPrimaryBlack" />
+        </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/layout_destino"
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -105,7 +127,6 @@
                 android:textColor="@color/textColorPrimaryBlack" />
         </LinearLayout>
 
-
         <RatingBar
             android:id="@+id/ratingBarDialogHistorial"
             android:layout_width="wrap_content"
@@ -117,8 +138,6 @@
             />
 
     </LinearLayout>
-
-
 
     <LinearLayout
         android:orientation="horizontal"

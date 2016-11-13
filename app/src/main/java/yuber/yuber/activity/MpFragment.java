@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -16,7 +15,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,8 +35,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
-
-import java.io.IOException;
 
 import yuber.yuber.R;
 
@@ -82,8 +78,7 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
     public static final String ClienteInstanciaServicioKey = "clienteInstanciaServicioKey";
     public static final String ClienteUbicacionDestinoKey = "ubicacionDestinoKey";
     public static final String EnViaje = "enViaje";
-    SharedPreferences sharedpreferences;
-
+    private SharedPreferences sharedpreferences;
     private String Ip = "54.213.51.6";
     private String Puerto = "8080";
 
@@ -133,6 +128,8 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
         FinViaje = (Button) v.findViewById(R.id.FinViaje);
         FinViaje.setOnClickListener(crearBotonFin());
 
+        sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+
         return v;
     }
 
@@ -170,9 +167,7 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
             public void onClick(View v) {
                 //Se llama a fin servicio
                 terminarViaje();
-
                 ocultarFV();
-                sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
                 SharedPreferences.Editor editor = sharedpreferences.edit();
                 editor.putString(EnViaje, "false");
                 editor.commit();
@@ -184,9 +179,7 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
     }
 
     public void comenzarViaje(){
-        SharedPreferences sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
         String instanciaID = sharedpreferences.getString(ClienteInstanciaServicioKey, "");
-
         String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Proveedor/IniciarServicio/" + instanciaID;
         AsyncHttpClient client = new AsyncHttpClient();
         client.get(null, url, new AsyncHttpResponseHandler(){
@@ -207,7 +200,7 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
     }
 
     public void terminarViaje(){
-        SharedPreferences sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+  //      SharedPreferences sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
         String instanciaID = sharedpreferences.getString(ClienteInstanciaServicioKey, "");
 
         String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Proveedor/FinServicio/" + instanciaID + ",5";
@@ -235,9 +228,6 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
         LatLng myLocatLatLng;
         LatLng mdeoLatLng = new LatLng(-34, -56);
         Location myLocation = null;
-
-
-
 
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -360,23 +350,6 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
     public void onMapClick(LatLng latLng) {
     }
 
-    private String getAddressFromLatLng( LatLng latLng ) {
-        Geocoder geocoder = new Geocoder( getActivity() );
-        String address = "";
-        try {
-            address =geocoder
-                    .getFromLocation( latLng.latitude, latLng.longitude, 1 )
-                    .get( 0 ).getAddressLine( 0 ) ;
-        } catch (IOException e ) {
-            // this is the line of code that sends a real error message to the  log
-            Log.e("ERROR", "ERROR IN CODE: " + e.toString());
-            // this is the line that prints out the location in the code where the error occurred.
-            e.printStackTrace();
-            return "ERROR_IN_CODE";
-        }
-        return address;
-    }
-
     @Override
     public void onResume() {
         super.onResume();
@@ -411,7 +384,6 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
                 mostrarDialCancelaronViaje();
             }else if(ACTION_INTENT_DESTINO_ELEGIDO.equals(intent.getAction()) ){
                 String jsonDestino = intent.getStringExtra("DATOS_DESTINO");
-                sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
                 SharedPreferences.Editor editor = sharedpreferences.edit();
                 editor.putString(ClienteUbicacionDestinoKey, jsonDestino);
                 editor.commit();
@@ -453,9 +425,7 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
 
     public void actualizarCoordenadas(String email) {
         if (mCurrentLocation != null){
-            SharedPreferences sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
             String enViaje = sharedpreferences.getString(EnViaje, "");
-
             String latitud = String.valueOf(mCurrentLocation.getLatitude());
             String longitud = String.valueOf(mCurrentLocation.getLongitude());
             String instanciaID = "-1";
