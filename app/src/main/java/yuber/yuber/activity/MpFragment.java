@@ -431,7 +431,7 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
                 Toast.makeText(getActivity().getApplicationContext(), "pongo el punto en el mapa y trazo la ruta", Toast.LENGTH_LONG).show();
             }else if(ACTION_PRENDE_INICIAR.equals(intent.getAction())) {
                 mostrarIV();
-
+                ponerMarcadorOrigen();
 
             }else if(ACTION_PRENDE_FIN.equals(intent.getAction())) {//TODO eliminar?, se paso a ACTION_APAGA_FIN
                 //ponerMarcadorOrigen();
@@ -440,8 +440,8 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
                 //VINIENDO DEL DIALOGO RECHAZAR ACEPTAR SOLO ENTRA CON EL SIGUIENTE INTENT
             }else if(ACTION_APAGA_FIN.equals(intent.getAction())) {
                 ocultarFV();
-                ponerMarcadorOrigen();
-                mostrarFV();
+
+
             }else if(ACTION_APAGA_INICIAR.equals(intent.getAction())) {
                 ocultarIV();
 
@@ -467,7 +467,12 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
         mOrigenLatLng = new LatLng(latitud,longitud);
     }
 
+    private void eliminarMarcadorOrigen(){
+        if (mOrigenMarker != null)
+            mOrigenMarker.remove();
+    }
     private void ponerMarcadorOrigen() {
+        eliminarMarcadorOrigen();
         MarkerOptions options;
         options = new MarkerOptions().position(mOrigenLatLng);
         options.icon(BitmapDescriptorFactory.defaultMarker());

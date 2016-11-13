@@ -116,10 +116,10 @@ public class FragmentDialogYuberAceptarRechazar extends DialogFragment {
                         //aparece boton
 
                         //TODO CHEQUEAR QUE ONDA CON LOS INTENT ESTOS! NO SE PUEDE EVIAR VARIOS, creo...
-                        Intent intent = new Intent("MpFragment.action.APAGA_FIN");
-                        LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
-                        //intent = new Intent("MpFragment.action.PRENDE_INICIAR");
+                        Intent intent ;//= new Intent("MpFragment.action.APAGA_FIN");
                        // LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
+                        intent = new Intent("MpFragment.action.PRENDE_INICIAR");
+                        LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
                         //intent = new Intent("MpFragment.action.MpFragment.action.MARCAR_ORIGEN");
                        // LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
 
