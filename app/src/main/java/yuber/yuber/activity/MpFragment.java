@@ -15,6 +15,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,11 +31,17 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import yuber.yuber.R;
 
@@ -50,7 +57,12 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
 
     private GoogleApiClient mGoogleApiClient;
     private Location mCurrentLocation;
+    private Marker mOrigenMarker;
+    private LatLng mOrigenLatLng;
     private Marker mDestinationMarker;
+
+
+    private static final String TAG = "MAPA";
 
     //NOTIFICACIONES
     public static final String ACTION_INTENT_ACEPTAR_RECHAZAR = "MpFragment.action.ACEPTAR_RECHAZAR";
@@ -62,6 +74,7 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
     public static final String ACTION_PRENDE_FIN = "MpFragment.action.PRENDE_FIN";
     public static final String ACTION_APAGA_INICIAR = "MpFragment.action.APAGA_INICIAR";
     public static final String ACTION_APAGA_FIN = "MpFragment.action.APAGA_FIN";
+    public static final String ACTION_MARCAR_ORIGEN = "MpFragment.action.MARCAR_ORIGEN";
 
 
 
@@ -115,10 +128,16 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
         fragmentTransaction.replace(R.id.FlashBarLayout, topFragment);
         fragmentTransaction.commit();
 
+
+
         IntentFilter filter = new IntentFilter(ACTION_INTENT_ACEPTAR_RECHAZAR);
         filter.addAction(ACTION_INTENT_CANCELARON_VIAJE);
         filter.addAction(ACTION_INTENT_DESTINO_ELEGIDO);
         filter.addAction(ACTION_PRENDE_INICIAR);
+        filter.addAction(ACTION_PRENDE_FIN);
+        filter.addAction(ACTION_APAGA_INICIAR);
+        filter.addAction(ACTION_APAGA_FIN);
+        filter.addAction(ACTION_MARCAR_ORIGEN);
 
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(ActivityDataReceiver, filter);
 
@@ -148,6 +167,8 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
     public void mostrarFV(){
         FinViaje.setVisibility(View.VISIBLE);
     }
+
+
 
     private View.OnClickListener crearBotonIniciar(){
         View.OnClickListener clickListtener = new View.OnClickListener() {
@@ -381,29 +402,78 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
     protected BroadcastReceiver ActivityDataReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "Adentro de BROADCASTER: " + intent.getAction());
             if(ACTION_INTENT_ACEPTAR_RECHAZAR.equals(intent.getAction()) ){
                 String jsonUsuario = intent.getStringExtra("DATOS_USUARIOS");
+                double latitud = -34.9133764;
+                double longitud = -56.1690546;
+                try {
+                    JSONObject datosUsuario = new JSONObject(jsonUsuario);
+                    JSONObject datosOrigenUsuario = new JSONObject(datosUsuario.getString("ubicacion"));
+                    latitud = datosOrigenUsuario.getDouble("latitud");
+                    longitud = datosOrigenUsuario.getDouble("longitud");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                mOrigenLatLng = new LatLng(latitud,longitud);
                 mostrarDialAceptarRechazar(jsonUsuario);
             }else if(ACTION_INTENT_CANCELARON_VIAJE.equals(intent.getAction()) ){
                 mostrarDialCancelaronViaje();
             }else if(ACTION_INTENT_DESTINO_ELEGIDO.equals(intent.getAction()) ){
                 String jsonDestino = intent.getStringExtra("DATOS_DESTINO");
+                //PARA QUE LO DE ABAJO? CREO QUE NO ES NECESARIO...
                 SharedPreferences.Editor editor = sharedpreferences.edit();
                 editor.putString(ClienteUbicacionDestinoKey, jsonDestino);
                 editor.commit();
+                //fin innecesariedad?
+                ponerMarcadorDestino(jsonDestino);
                 //pongo el punto en el mapa y trazo la ruta
                 Toast.makeText(getActivity().getApplicationContext(), "pongo el punto en el mapa y trazo la ruta", Toast.LENGTH_LONG).show();
             }else if(ACTION_PRENDE_INICIAR.equals(intent.getAction())) {
                 mostrarIV();
-            }else if(ACTION_PRENDE_FIN.equals(intent.getAction())) {
+
+
+            }else if(ACTION_PRENDE_FIN.equals(intent.getAction())) {//TODO eliminar?, se paso a ACTION_APAGA_FIN
+                //ponerMarcadorOrigen();
                 mostrarFV();
+
+                //VINIENDO DEL DIALOGO RECHAZAR ACEPTAR SOLO ENTRA CON EL SIGUIENTE INTENT
             }else if(ACTION_APAGA_FIN.equals(intent.getAction())) {
                 ocultarFV();
+                ponerMarcadorOrigen();
+                mostrarFV();
             }else if(ACTION_APAGA_INICIAR.equals(intent.getAction())) {
                 ocultarIV();
+
+            }else if(ACTION_MARCAR_ORIGEN.equals(intent.getAction())) {// TODO ELIMINAR, SE PASO A ACTION_APAGA_FIN
+                ponerMarcadorOrigen();
             }
+
         }
     };
+
+    private void ponerMarcadorDestino(String jsonDestino) {
+        Log.d(TAG, "Adentro de ponerMarcadorDestino" + jsonDestino);
+        double latitud = -34.9133764;
+        double longitud = -56.1690546;
+        try {
+            JSONObject datosUsuario = new JSONObject(jsonDestino);
+            JSONObject datosOrigenUsuario = new JSONObject(datosUsuario.getString("ubicacion"));
+            latitud = datosOrigenUsuario.getDouble("latitud");
+            longitud = datosOrigenUsuario.getDouble("longitud");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        mOrigenLatLng = new LatLng(latitud,longitud);
+    }
+
+    private void ponerMarcadorOrigen() {
+        MarkerOptions options;
+        options = new MarkerOptions().position(mOrigenLatLng);
+        options.icon(BitmapDescriptorFactory.defaultMarker());
+        mOrigenMarker = googleMap.addMarker(options);
+        mOrigenMarker.setTitle("Ubicacion cliente");
+    }
 
     private void mostrarDialAceptarRechazar(String JUser){
         Bundle args = new Bundle();

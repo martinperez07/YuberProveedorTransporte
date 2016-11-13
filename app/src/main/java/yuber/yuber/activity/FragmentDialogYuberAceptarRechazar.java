@@ -106,18 +106,24 @@ public class FragmentDialogYuberAceptarRechazar extends DialogFragment {
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+
                         //seteo la variable global
-                        sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+                        SharedPreferences sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
                         SharedPreferences.Editor editor = sharedpreferences.edit();
                         editor.putString(EnViaje, "true");
                         editor.commit();
                         //envio al server que acepto el viaje
-                        AceptarServicio(finalInstanciaId);
                         //aparece boton
+
+                        //TODO CHEQUEAR QUE ONDA CON LOS INTENT ESTOS! NO SE PUEDE EVIAR VARIOS, creo...
                         Intent intent = new Intent("MpFragment.action.APAGA_FIN");
                         LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
-                        intent = new Intent("MpFragment.action.PRENDE_INICIAR");
-                        LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
+                        //intent = new Intent("MpFragment.action.PRENDE_INICIAR");
+                       // LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
+                        //intent = new Intent("MpFragment.action.MpFragment.action.MARCAR_ORIGEN");
+                       // LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
+
+                        AceptarServicio(finalInstanciaId);
                         dismiss();
                     }
                 }
@@ -151,6 +157,7 @@ public class FragmentDialogYuberAceptarRechazar extends DialogFragment {
         client.get(null, url, new AsyncHttpResponseHandler(){
             @Override
             public void onSuccess(String response) {
+
             }
             @Override
             public void onFailure(int statusCode, Throwable error, String content){

@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity implements FragmentDrawer.Fr
                 while(true) {
                     if (mapFragment != null)
                         mapFragment.actualizarCoordenadas(email);
-                    temp.esperarXsegundos(30);
+                    temp.esperarXsegundos(10);
                 }
             }
         }).start();
