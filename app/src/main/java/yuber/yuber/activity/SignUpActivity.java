@@ -34,7 +34,7 @@ import yuber.yuber.R;
 
 public class SignUpActivity extends AppCompatActivity {
 
-    private String Ip = "54.213.51.6";
+    private String Ip = "54.203.12.195";
     private String Puerto = "8080";
     private EditText nameText;
     private EditText addressText;
@@ -44,6 +44,8 @@ public class SignUpActivity extends AppCompatActivity {
     private EditText reEnterPasswordText;
     private EditText LastNameText;
     private EditText ciudadText;
+    private EditText MarcaVehiculo;
+    private EditText ModeloVehiculo;
     private Spinner combo;
 
     private Map<String, String> servicios;
@@ -56,6 +58,8 @@ public class SignUpActivity extends AppCompatActivity {
     private String ciudad;
     private String servicioId;
     private String servicioKey;
+    private String marcaVehiculo;
+    private String modeloVehiculo;
 
     public static final String MyPREFERENCES = "MyPrefs" ;
     public static final String TokenKey = "tokenKey";
@@ -80,6 +84,9 @@ public class SignUpActivity extends AppCompatActivity {
         reEnterPasswordText = (EditText) findViewById(R.id.input_reEnterPassword);
         LastNameText = (EditText) findViewById(R.id.input_LastName);
         ciudadText = (EditText) findViewById(R.id.input_ciudad);
+        MarcaVehiculo = (EditText) findViewById(R.id.input_vehiculoMarca);
+        ModeloVehiculo = (EditText) findViewById(R.id.input_vehiculoModelo);
+
         signupButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -168,6 +175,8 @@ public class SignUpActivity extends AppCompatActivity {
         password = passwordText.getText().toString();
         servicioKey = (String) combo.getSelectedItem();
         servicioId = servicios.get(servicioKey);
+        marcaVehiculo = MarcaVehiculo.getText().toString();
+        modeloVehiculo = ModeloVehiculo.getText().toString();
 
         temporizadorProv temporizador = new temporizadorProv();
         boolean ok = true;
@@ -199,6 +208,9 @@ public class SignUpActivity extends AppCompatActivity {
             obj.put("usuarioPromedioPuntaje", 0.0);
             obj.put("usuarioCorreo", email);
             obj.put("usuarioCiudad", ciudad);
+            obj.put("vehiculoMarca", marcaVehiculo);
+            obj.put("vehiculoModelo", modeloVehiculo);
+
             obj.put("estado", "OK");
             obj.put("gananciaTotal", 0);
             obj.put("porCobrar", 0);

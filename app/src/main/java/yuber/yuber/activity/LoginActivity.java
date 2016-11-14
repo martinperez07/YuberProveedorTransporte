@@ -31,7 +31,7 @@ public class LoginActivity extends AppCompatActivity {
     private static final int REQUEST_SIGNUP = 0;
     private EditText mEmailView;
     private EditText mPasswordView;
-    private String Ip = "54.213.51.6";
+    private String Ip = "54.203.12.195";
     private String Puerto = "8080";
     ProgressDialog prgDialogCargando;
 

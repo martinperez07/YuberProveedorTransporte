@@ -28,7 +28,7 @@ public class MapJornadaActivaFragment extends Fragment {
     public static final String EnViaje = "enViaje";
     SharedPreferences sharedpreferences;
 
-    private String Ip = "54.213.51.6";
+    private String Ip = "54.203.12.195";
     private String Puerto = "8080";
 
     public MapJornadaActivaFragment() {

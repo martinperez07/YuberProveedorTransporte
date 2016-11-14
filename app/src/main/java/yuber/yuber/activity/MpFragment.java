@@ -92,7 +92,7 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
     public static final String EstadoDelViaje = "estadoDelViaje";
     public static final String EnViaje = "enViaje";
     private SharedPreferences sharedpreferences;
-    private String Ip = "54.213.51.6";
+    private String Ip = "54.203.12.195";
     private String Puerto = "8080";
 
     private Button IniciarViaje;

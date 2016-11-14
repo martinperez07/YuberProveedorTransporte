@@ -27,7 +27,7 @@ public class FragmentDialogYuberAceptarRechazar extends DialogFragment {
     private static final String TAG = FragmentDialogYuberAceptarRechazar.class.getSimpleName();
     private JSONObject mProveedor;
     private JSONObject mCliente;
-    private String Ip = "54.213.51.6";
+    private String Ip = "54.203.12.195";
     private String Puerto = "8080";
 
     public static final String MyPREFERENCES = "MyPrefs" ;

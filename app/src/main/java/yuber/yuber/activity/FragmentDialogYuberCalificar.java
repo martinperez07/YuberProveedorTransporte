@@ -20,7 +20,7 @@ import yuber.yuber.R;
 
 public class FragmentDialogYuberCalificar extends DialogFragment {
 
-    private String Ip = "54.213.51.6";
+    private String Ip = "54.203.12.195";
     private String Puerto = "8080";
 
     private static final String TAG = FragmentDialogYuberCancelaronViaje.class.getSimpleName();
@@ -102,11 +102,9 @@ public class FragmentDialogYuberCalificar extends DialogFragment {
         client.get(null, url, new AsyncHttpResponseHandler(){
             @Override
             public void onSuccess(String response) {
-                System.out.println("--------------->Success");
             }
             @Override
             public void onFailure(int statusCode, Throwable error, String content){
-                System.out.println("--------------->Fail");
             }
         });
     }

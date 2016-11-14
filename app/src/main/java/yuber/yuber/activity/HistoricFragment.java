@@ -40,7 +40,7 @@ public class HistoricFragment extends Fragment {
     public static final String EmailKey = "emailKey";
     public static final String HistorialKey = "historialKey";
     SharedPreferences sharedpreferences;
-    private String Ip = "54.213.51.6";
+    private String Ip = "54.203.12.195";
     private String Puerto = "8080";
 
     private JSONObject rec;

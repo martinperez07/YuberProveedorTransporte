@@ -20,7 +20,7 @@ import yuber.yuber.R;
 public class FragmentDialogYuberHistorial extends DialogFragment {
     private static final String TAG = FragmentDialogYuberAceptarRechazar.class.getSimpleName();
     private JSONObject datos;
-    private String Ip = "54.213.51.6";
+    private String Ip = "54.203.12.195";
     private String Puerto = "8080";
 
     public static final String MyPREFERENCES = "MyPrefs" ;

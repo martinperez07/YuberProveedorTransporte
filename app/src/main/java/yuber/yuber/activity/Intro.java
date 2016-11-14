@@ -24,7 +24,7 @@ public class Intro extends AppCompatActivity {
     public static final String EnViaje = "enViaje";
     SharedPreferences sharedpreferences;
 
-    private String Ip = "54.213.51.6";
+    private String Ip = "54.203.12.195";
     private String Puerto = "8080";
 
     @Override
@@ -44,7 +44,6 @@ public class Intro extends AppCompatActivity {
         editor.putString(EnViaje, "false");
         editor.commit();
         //Combruebo si ya tengo session.
-
         TengoSession(token);
     }
 
