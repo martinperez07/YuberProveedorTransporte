@@ -75,7 +75,6 @@ public class MainActivity extends AppCompatActivity implements FragmentDrawer.Fr
             }
         }).start();
 
-
         displayView(0);
     }
 
@@ -97,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements FragmentDrawer.Fr
             SharedPreferences sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
             String email = sharedpreferences.getString(EmailKey, "");
             String enViaje = sharedpreferences.getString(EnViaje, "");
-            if (enViaje.contains("true")) {
+            if (enViaje.contains("false")) {
                 CerrarSesion(email);
             }else {
                 Toast.makeText(getApplicationContext(), "No puede cerrar sesion mientras estas brindando un servicio", Toast.LENGTH_LONG).show();

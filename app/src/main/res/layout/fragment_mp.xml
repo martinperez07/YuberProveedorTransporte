@@ -25,14 +25,34 @@
 
     </FrameLayout>
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Iniciar viaje"
-        android:id="@+id/IniciarViaje"
-        android:layout_gravity="center_horizontal|bottom"
-        android:layout_margin="@dimen/fab_margin"
-        android:visibility="gone"/>
+
+
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cancelar viaje"
+            android:id="@+id/CancelarViaje"
+            android:layout_gravity="bottom"
+            android:layout_margin="@dimen/fab_margin"
+            android:visibility="gone"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Iniciar viaje"
+            android:id="@+id/IniciarViaje"
+            android:layout_gravity="bottom"
+            android:layout_margin="@dimen/fab_margin"
+            android:visibility="gone"/>
+
+    </LinearLayout>
+
 
     <Button
         android:layout_width="wrap_content"

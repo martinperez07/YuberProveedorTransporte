@@ -39,7 +39,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -90,6 +89,7 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
     public static final String MyPREFERENCES = "MyPrefs" ;
     public static final String ClienteInstanciaServicioKey = "clienteInstanciaServicioKey";
     public static final String ClienteUbicacionDestinoKey = "ubicacionDestinoKey";
+    public static final String EstadoDelViaje = "estadoDelViaje";
     public static final String EnViaje = "enViaje";
     private SharedPreferences sharedpreferences;
     private String Ip = "54.213.51.6";
@@ -97,6 +97,7 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
 
     private Button IniciarViaje;
     private Button FinViaje;
+    private Button CancelarViaje;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -128,8 +129,6 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
         fragmentTransaction.replace(R.id.FlashBarLayout, topFragment);
         fragmentTransaction.commit();
 
-
-
         IntentFilter filter = new IntentFilter(ACTION_INTENT_ACEPTAR_RECHAZAR);
         filter.addAction(ACTION_INTENT_CANCELARON_VIAJE);
         filter.addAction(ACTION_INTENT_DESTINO_ELEGIDO);
@@ -144,16 +143,29 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
         IniciarViaje = (Button) v.findViewById(R.id.IniciarViaje);
         IniciarViaje.setOnClickListener(crearBotonIniciar());
 
+        CancelarViaje = (Button) v.findViewById(R.id.CancelarViaje);
+        CancelarViaje.setOnClickListener(crearBotonCancelar());
+
         FinViaje = (Button) v.findViewById(R.id.FinViaje);
         FinViaje.setOnClickListener(crearBotonFin());
 
         sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+        String enviaje = sharedpreferences.getString(EnViaje, "");
+        if (enviaje.contains("true")){
+            String estadoDelViaje = sharedpreferences.getString(EstadoDelViaje, "");
+            if(estadoDelViaje.contains("inicio")){
+                mostrarIV();
+            }else{
+                mostrarFV();
+            }
+        }
 
         return v;
     }
 
     public void ocultarIV(){
         IniciarViaje.setVisibility(View.GONE);
+        CancelarViaje.setVisibility(View.GONE);
     }
 
     public void ocultarFV(){
@@ -161,14 +173,21 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
     }
 
     public void mostrarIV(){
+        SharedPreferences sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+        SharedPreferences.Editor editor = sharedpreferences.edit();
+        editor.putString(EstadoDelViaje, "inicio");
+        editor.commit();
         IniciarViaje.setVisibility(View.VISIBLE);
+        CancelarViaje.setVisibility(View.VISIBLE);
     }
 
     public void mostrarFV(){
+        SharedPreferences sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+        SharedPreferences.Editor editor = sharedpreferences.edit();
+        editor.putString(EstadoDelViaje, "fin");
+        editor.commit();
         FinViaje.setVisibility(View.VISIBLE);
     }
-
-
 
     private View.OnClickListener crearBotonIniciar(){
         View.OnClickListener clickListtener = new View.OnClickListener() {
@@ -178,6 +197,18 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
                 //Cambio de botones
                 ocultarIV();
                 mostrarFV();
+            }
+        };
+        return clickListtener;
+    }
+
+    private View.OnClickListener crearBotonCancelar(){
+        View.OnClickListener clickListtener = new View.OnClickListener() {
+            public void onClick(View v) {
+                //Se llama a comenzar viaje
+                cancelarViaje();
+                //Cambio de botones
+                ocultarIV();
             }
         };
         return clickListtener;
@@ -202,6 +233,27 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
     public void comenzarViaje(){
         String instanciaID = sharedpreferences.getString(ClienteInstanciaServicioKey, "");
         String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Proveedor/IniciarServicio/" + instanciaID;
+        AsyncHttpClient client = new AsyncHttpClient();
+        client.get(null, url, new AsyncHttpResponseHandler(){
+            @Override
+            public void onSuccess(String response) {
+            }
+            @Override
+            public void onFailure(int statusCode, Throwable error, String content){
+                if(statusCode == 404){
+                    Toast.makeText(getActivity().getApplicationContext(), "Requested resource not found", Toast.LENGTH_LONG).show();
+                }else if(statusCode == 500){
+                    Toast.makeText(getActivity().getApplicationContext(), "Something went wrong at server end", Toast.LENGTH_LONG).show();
+                }else{
+                    Toast.makeText(getActivity().getApplicationContext(), "Unexpected Error occured! [Most common Error: Device might not be connected to Internet or remote server is not up and running]", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+    }
+
+    public void cancelarViaje(){
+        String instanciaID = sharedpreferences.getString(ClienteInstanciaServicioKey, "");
+        String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Cliente/CancelarPedido/" + instanciaID;
         AsyncHttpClient client = new AsyncHttpClient();
         client.get(null, url, new AsyncHttpResponseHandler(){
             @Override
@@ -418,6 +470,7 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
                 mOrigenLatLng = new LatLng(latitud,longitud);
                 mostrarDialAceptarRechazar(jsonUsuario);
             }else if(ACTION_INTENT_CANCELARON_VIAJE.equals(intent.getAction()) ){
+                //muestro el dialogo
                 mostrarDialCancelaronViaje();
             }else if(ACTION_INTENT_DESTINO_ELEGIDO.equals(intent.getAction()) ){
                 String jsonDestino = intent.getStringExtra("DATOS_DESTINO");
@@ -432,19 +485,14 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
             }else if(ACTION_PRENDE_INICIAR.equals(intent.getAction())) {
                 mostrarIV();
                 ponerMarcadorOrigen();
-
             }else if(ACTION_PRENDE_FIN.equals(intent.getAction())) {//TODO eliminar?, se paso a ACTION_APAGA_FIN
                 //ponerMarcadorOrigen();
                 mostrarFV();
-
                 //VINIENDO DEL DIALOGO RECHAZAR ACEPTAR SOLO ENTRA CON EL SIGUIENTE INTENT
             }else if(ACTION_APAGA_FIN.equals(intent.getAction())) {
                 ocultarFV();
-
-
             }else if(ACTION_APAGA_INICIAR.equals(intent.getAction())) {
                 ocultarIV();
-
             }else if(ACTION_MARCAR_ORIGEN.equals(intent.getAction())) {// TODO ELIMINAR, SE PASO A ACTION_APAGA_FIN
                 ponerMarcadorOrigen();
             }
@@ -471,6 +519,7 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
         if (mOrigenMarker != null)
             mOrigenMarker.remove();
     }
+
     private void ponerMarcadorOrigen() {
         eliminarMarcadorOrigen();
         MarkerOptions options;
@@ -489,6 +538,8 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
     }
 
     private void mostrarDialCancelaronViaje(){
+        ocultarFV();
+        ocultarIV();
         Bundle args = new Bundle();
         FragmentDialogYuberCancelaronViaje newFragmentDialog = new FragmentDialogYuberCancelaronViaje();
         newFragmentDialog.setArguments(args);

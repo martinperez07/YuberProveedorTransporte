@@ -21,20 +21,21 @@ public class MiFirebaseMessagingService extends FirebaseMessagingService {
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
+        //ACA VAN LAS CADENAS DE NOTIFICACIONES QUE ME LLEGAN
         SharedPreferences sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
         String tabajando = sharedpreferences.getString(EstoyTrabajando, "");
         String enViaje = sharedpreferences.getString(EnViaje, "");
-
+        String tituloNotificacion = remoteMessage.getNotification().getTitle();
         if (tabajando.contains("true")) {
             if (enViaje.contains("false")) {
-                String tituloNotificacion = remoteMessage.getNotification().getTitle();
-                //ACA VAN LAS CADENAS DE NOTIFICACIONES QUE ME LLEGAN
                 if (tituloNotificacion.equals("Nueva solicitud")) {
                     sendBodyToMapFragment(remoteMessage.getData());
+                }
+            } else {
+                if (tituloNotificacion.equals("Solicitud cancelada")) {
+                    sendBodyToMapFragmentCancelado();
                 } else if (tituloNotificacion.equals("Destino elegido")) {
                     sendBodyToMapFragmentComenzarViaje(remoteMessage.getData());
-                } else if (tituloNotificacion.equals("Solicitud cancelada")) {
-                    sendBodyToMapFragmentCancelado();
                 }
             }
         }

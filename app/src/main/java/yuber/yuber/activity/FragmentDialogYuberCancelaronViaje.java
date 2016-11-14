@@ -59,6 +59,8 @@ public class FragmentDialogYuberCancelaronViaje extends DialogFragment {
         Button FinViaje = (Button) getActivity().findViewById(R.id.FinViaje);
         FinViaje.setVisibility(View.GONE);
 
+
+
         Button botonAceptar = (Button) v.findViewById(R.id.boton_aceptar_yuber);
         botonAceptar.setOnClickListener(
                 new View.OnClickListener() {

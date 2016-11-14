@@ -96,11 +96,7 @@ public class FragmentDialogYuberCalificar extends DialogFragment {
         int punt = new Float(number).intValue();
 
         puntaje = String.valueOf(number);
-        String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Cliente/PuntuarCliente/" + puntaje + ",Sin comentario," + instanciaID;
-
-
-        System.out.println("--------------->" + url);
-        System.out.println("--------------->" + instanciaID);
+        String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Cliente/PuntuarCliente/" + punt + ",Sin comentario," + instanciaID;
 
         AsyncHttpClient client = new AsyncHttpClient();
         client.get(null, url, new AsyncHttpResponseHandler(){
