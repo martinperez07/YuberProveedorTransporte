@@ -66,6 +66,7 @@ public class FragmentDialogYuberAceptarRechazar extends DialogFragment {
         TextView textoAppellidoProv = (TextView) v.findViewById(R.id.text_dialog_yub_disp_apellido);
         TextView textoTelefonoProv = (TextView) v.findViewById(R.id.text_dialog_yub_disp_telefono);
         RatingBar ratingBarPuntajeProv = (RatingBar) v.findViewById(R.id.ratingBarYuberDispo);
+        ratingBarPuntajeProv.setMax(5);
 
         double puntaje = 0;
         String instanciaId = "";

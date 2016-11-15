@@ -3,7 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@android:color/white"
-    android:paddingTop="@dimen/dialog_body"
+    android:paddingTop="5dp"
+    android:paddingBottom="5dp"
     android:paddingLeft="@dimen/dialog_body">
 
 
@@ -29,18 +30,16 @@
          android:paddingBottom="@dimen/normal_padding"
          android:weightSum="2">
 
-
-
-
          <LinearLayout
              android:orientation="vertical"
              android:layout_width="0dp"
              android:layout_height="wrap_content"
-             android:layout_weight="1">
+             android:layout_weight="0.75">
 
              <TextView
                  android:id="@+id/text_dialog_yub_disp_nombre"
                  android:text="Nombre"
+                 android:paddingBottom="@dimen/normal_padding"
                  android:layout_width="match_parent"
                  android:layout_height="wrap_content"
                  android:layout_weight="1"
@@ -59,13 +58,13 @@
              android:orientation="vertical"
              android:layout_width="0dp"
              android:layout_height="match_parent"
-             android:layout_weight="1"
+             android:layout_weight="1.15"
              android:gravity="center_vertical">
 
              <RatingBar
                  android:id="@+id/ratingBarYuberDispo"
-                 style="?android:attr/ratingBarStyleSmall"
-                 android:layout_width="wrap_content"
+                 style="@android:style/Widget.DeviceDefault.Light.RatingBar.Indicator"
+                 android:layout_width="210dp"
                  android:layout_height="wrap_content"
                  android:layout_marginRight="53dp"
                  android:layout_marginEnd="53dp"
@@ -76,6 +75,7 @@
 
 
      </LinearLayout>
+
     <LinearLayout
         android:id="@+id/layout3_dialogo_llego_yuber"
         android:orientation="horizontal"

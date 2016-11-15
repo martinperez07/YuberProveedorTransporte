@@ -53,6 +53,7 @@ public class FragmentDialogYuberHistorial extends DialogFragment {
         TextView textoOrigen = (TextView) v.findViewById(R.id.text_hist_origen_variable);
         TextView textoDestino = (TextView) v.findViewById(R.id.text_hist_destino_variable);
         RatingBar ratingBarPuntaje = (RatingBar) v.findViewById(R.id.ratingBarDialogHistorial);
+        ratingBarPuntaje.setIsIndicator(true);
         double puntaje = 0;
 
         try {

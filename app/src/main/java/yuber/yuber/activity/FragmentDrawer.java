@@ -154,7 +154,6 @@ public class FragmentDrawer extends Fragment {
 
         @Override
         public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
-
             View child = rv.findChildViewUnder(e.getX(), e.getY());
             if (child != null && clickListener != null && gestureDetector.onTouchEvent(e)) {
                 clickListener.onClick(child, rv.getChildPosition(child));
@@ -168,7 +167,6 @@ public class FragmentDrawer extends Fragment {
 
         @Override
         public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-
         }
     }
 
