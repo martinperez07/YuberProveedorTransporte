@@ -61,7 +61,7 @@ public class FragmentDialogYuberCalificar extends DialogFragment {
         texto.setText("Califica a " + Nombre + " " + Apellido);
 
         ratingBarPuntaje = (RatingBar) v.findViewById(R.id.ratingBarDialogHistorial);
-        double puntaje = 2.5;
+        double puntaje = 0;
         ratingBarPuntaje.setRating(((float) puntaje));
 
         Button botonConfirmar = (Button) v.findViewById(R.id.boton_confirmar);

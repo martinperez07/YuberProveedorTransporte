@@ -76,7 +76,7 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
     private Location mCurrentLocation;
     private LatLng mOrigenLatLng;
     private Marker mOrigenMarker;
-    private String mDistanciaViaje = "-1";
+    private String mDistanciaViaje = "1";
     private ArrayList<LatLng> markerPoints;
 
     private static final String TAG = "MAPA";
@@ -127,7 +127,6 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
         mMapView = (MapView) v.findViewById(R.id.mapView);
         mMapView.onCreate(savedInstanceState);
         mMapView.onResume();
-        // needed to get the map to display immediately
 
         try {
             MapsInitializer.initialize(getActivity().getApplicationContext());
@@ -283,7 +282,7 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
     public void cancelarViaje(){
         borrarRutaYMarcadores();
         String instanciaID = sharedpreferences.getString(ClienteInstanciaServicioKey, "");
-        String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Cliente/CancelarPedido/" + instanciaID;
+        String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Proveedor/CancelarServicio/" + instanciaID;
         AsyncHttpClient client = new AsyncHttpClient();
         client.get(null, url, new AsyncHttpResponseHandler(){
             @Override
@@ -304,11 +303,8 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
 
     public void terminarViaje(){
         borrarRutaYMarcadores();
-  //      SharedPreferences sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
         String instanciaID = sharedpreferences.getString(ClienteInstanciaServicioKey, "");
-        Double distancia = Double.parseDouble(mDistanciaViaje);
-        int distanciaRedondeada = (int) Math.round(distancia);
-        String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Proveedor/FinServicio/" + instanciaID + "," + distanciaRedondeada;
+        String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Proveedor/FinServicio/" + instanciaID + "," + mDistanciaViaje;
         AsyncHttpClient client = new AsyncHttpClient();
         client.get(null, url, new AsyncHttpResponseHandler(){
             @Override
@@ -832,7 +828,11 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
             String[] splited = distance.split("\\s+");
             mDistanciaViaje = splited[0];
 
-            Toast.makeText(getActivity(), "Distancia: " + distance, Toast.LENGTH_SHORT).show();
+            String[] splitDist = distance.split(" ");
+            String cantkm = splitDist[0];
+            int distancia = (int) (Float.parseFloat(cantkm) * 1000);
+
+            mDistanciaViaje = Integer.toString(distancia);
 
             // Drawing polyline in the Google Map for the i-th route
             googleMap.addPolyline(lineOptions);

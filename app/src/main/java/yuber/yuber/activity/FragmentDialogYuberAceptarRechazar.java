@@ -70,8 +70,10 @@ public class FragmentDialogYuberAceptarRechazar extends DialogFragment {
         double puntaje = 0;
         String instanciaId = "";
         try {
+
             String JSONubicacion = mProveedor.getString("ubicacion");
             String JSONcliente = mProveedor.getString("cliente");
+            System.out.println("--el json pa:" + JSONcliente);
             mCliente = new JSONObject(JSONcliente);
             String nombre = mCliente.getString("usuarioNombre");
             String apellido = mCliente.getString("usuarioApellido");
