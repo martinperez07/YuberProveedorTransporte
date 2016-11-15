@@ -57,6 +57,7 @@
             android:layout_centerHorizontal="true"
             android:gravity="center"
             android:clickable="false"
+            android:stepSize="1"
             />
 
     </LinearLayout>

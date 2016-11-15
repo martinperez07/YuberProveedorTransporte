@@ -189,7 +189,6 @@ public class MainActivity extends AppCompatActivity implements FragmentDrawer.Fr
                 FragmentDialogYuberRetirarFondos newFragmentDialog = new FragmentDialogYuberRetirarFondos();
                 newFragmentDialog.setArguments(args);
                 newFragmentDialog.show(getSupportFragmentManager(), "TAG");
-
                 break;
             default:
                 break;

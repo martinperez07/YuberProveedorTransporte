@@ -84,9 +84,6 @@ public class FragmentDialogYuberAceptarRechazar extends DialogFragment {
             puntaje = mCliente.getDouble("usuarioPromedioPuntaje");
             instanciaId = mProveedor.getString("instanciaServicioId");
 
-
-
-
             sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
             SharedPreferences.Editor editor = sharedpreferences.edit();
             editor.putString(ClienteUbicacionOrigenKey, JSONubicacion);

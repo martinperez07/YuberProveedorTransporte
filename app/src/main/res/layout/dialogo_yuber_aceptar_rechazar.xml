@@ -70,6 +70,7 @@
                  android:layout_marginRight="53dp"
                  android:layout_marginEnd="53dp"
                  android:fillViewport="true"
+                 android:stepSize="0.5"
                  />
          </LinearLayout>
 

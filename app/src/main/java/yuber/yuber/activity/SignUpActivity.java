@@ -64,6 +64,8 @@ public class SignUpActivity extends AppCompatActivity {
     private String servicioKey;
     private String marcaVehiculo;
     private String modeloVehiculo;
+    private String ClavePrivada;
+    private String ClavePublica;
     private EditText clavePrivada;
     private EditText clavePublica;
 
@@ -193,12 +195,14 @@ public class SignUpActivity extends AppCompatActivity {
         servicioId = servicios.get(servicioKey);
         marcaVehiculo = MarcaVehiculo.getText().toString();
         modeloVehiculo = ModeloVehiculo.getText().toString();
+        ClavePrivada = clavePrivada.getText().toString();
+        ClavePublica = clavePublica.getText().toString();
 
-        temporizadorProv temporizador = new temporizadorProv();
         boolean ok = true;
-        ok = registrar();
-        if(ok){
+        registrar();
+    /*    if(ok){
             ok = asociarServicio(email, servicioId);
+            System.out.println("---asociarServicio: " + ok);
             if(ok){
                 saveCreditCard();
                 logear();
@@ -208,12 +212,13 @@ public class SignUpActivity extends AppCompatActivity {
         }else{
             Toast.makeText(getApplicationContext(), "No se pudo registrar el usuario, vuelva a intentar", Toast.LENGTH_LONG).show();
         }
-
+*/
     }
 
-    public boolean registrar(){
+    public void registrar(){
         String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Proveedor/RegistrarProveedor/";
         JSONObject obj = new JSONObject();
+        JSONObject objVert = new JSONObject();
         try {
             obj.put("usuarioDireccion", address);
             obj.put("usuarioContraseña", password);
@@ -225,70 +230,48 @@ public class SignUpActivity extends AppCompatActivity {
             obj.put("usuarioCiudad", ciudad);
             obj.put("vehiculoMarca", marcaVehiculo);
             obj.put("vehiculoModelo", modeloVehiculo);
-
             obj.put("estado", "OK");
             obj.put("gananciaTotal", 0);
             obj.put("porCobrar", 0);
+
+            objVert.put("tipoVertical", "Transporte");
+            objVert.put("proveedor", obj);
+
             AsyncHttpClient client = new AsyncHttpClient();
             ByteArrayEntity entity = null;
-            entity = new ByteArrayEntity(obj.toString().getBytes("UTF-8"));
+            entity = new ByteArrayEntity(objVert.toString().getBytes("UTF-8"));
             entity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
             client.post(null, url, entity, "application/json", new AsyncHttpResponseHandler() {
                 @Override
                 public void onSuccess(String response) {
-                    SharedPreferences.Editor editor = sharedpreferences.edit();
-                    editor.putString(ErrorRegistrar, "false");
-                    editor.commit();
+                    asociarServicio(email, servicioId);
                 }
                 @Override
                 public void onFailure(int statusCode, Throwable error, String content) {
-                    SharedPreferences.Editor editor = sharedpreferences.edit();
-                    editor.putString(ErrorRegistrar, "true");
-                    editor.commit();
+                    Toast.makeText(getApplicationContext(), "No se pudo registrar el usuario", Toast.LENGTH_LONG).show();
                 }
             });
         } catch (Exception e) {
-            return false;
-        }
-        temporizadorProv temporizador = new temporizadorProv();
-        temporizador.esperarXsegundos(1);
-
-        String error = sharedpreferences.getString(ErrorRegistrar, "");
-        if (error.contains("false")){
-            return true;
-        }else{
-            return false;
+            Toast.makeText(getApplicationContext(), "No se pudo registrar el usuario", Toast.LENGTH_LONG).show();
         }
     }
 
-    public boolean asociarServicio(String email, String servicioId){
+    public void asociarServicio(String email, String servicioId){
+        System.out.println("---servicioid " + servicioId + "email: " + email);
         String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Proveedor/AsociarServicio/" + email + "," + servicioId;
+        System.out.println("---url " + url);
+
         AsyncHttpClient client = new AsyncHttpClient();
         client.get(null, url, new AsyncHttpResponseHandler(){
             @Override
             public void onSuccess(String response) {
-                SharedPreferences.Editor editor = sharedpreferences.edit();
-                editor.putString(ErrorAsociar, "false");
-                editor.commit();
+                saveCreditCard();
             }
             @Override
             public void onFailure(int statusCode, Throwable error, String content){
-                SharedPreferences.Editor editor = sharedpreferences.edit();
-                editor.putString(ErrorAsociar, "true");
-                editor.commit();
+                System.out.println("No se pudo asociar al servicio");
             }
         });
-        temporizadorProv temporizador = new temporizadorProv();
-        temporizador.esperarXsegundos(1);
-        String error = sharedpreferences.getString(ErrorAsociar, "");
-
-        System.out.println("--->asociarServicio: " + error);
-
-        if (error.contains("false")){
-            return true;
-        }else{
-            return false;
-        }
     }
 
     public void logear(){
@@ -304,6 +287,7 @@ public class SignUpActivity extends AppCompatActivity {
             obj.put("correo", email);
             obj.put("password", password);
             obj.put("deviceId", token);
+            System.out.println("----" + email + " - " + password + " - " +token);
             AsyncHttpClient client = new AsyncHttpClient();
             ByteArrayEntity entity = null;
             entity = new ByteArrayEntity(obj.toString().getBytes("UTF-8"));
@@ -314,7 +298,7 @@ public class SignUpActivity extends AppCompatActivity {
                     if (response.contains("true")) {
                         cambiarAHome();
                     } else {
-                        Toast.makeText(getApplicationContext(), "Voluelva a loguearse", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), "Vuelva a loguearse", Toast.LENGTH_LONG).show();
                     }
                 }
                 @Override
@@ -349,35 +333,38 @@ public class SignUpActivity extends AppCompatActivity {
         String mobile = mobileText.getText().toString();
         String password = passwordText.getText().toString();
         String reEnterPassword = reEnterPasswordText.getText().toString();
+        String marcaVehiculo = MarcaVehiculo.getText().toString();
+        String modeloVehiculo = ModeloVehiculo.getText().toString();
+        String ClavePrivada = clavePrivada.getText().toString();
+        String ClavePublica = clavePublica.getText().toString();
 
         if (name.isEmpty() || name.length() < 3) {
-            nameText.setError("Al menos 3 caracteres");
+            nameText.setError("Nombre con al menos 3 caracteres");
             valid = false;
         } else {
             nameText.setError(null);
         }
 
         if (LastName.isEmpty() || LastName.length() < 3) {
-            LastNameText.setError("Al menos 3 caracteres");
+            LastNameText.setError("Apellido con al menos 3 caracteres");
             valid = false;
         } else {
             LastNameText.setError(null);
         }
 
         if (ciudad.isEmpty() || ciudad.length() < 3) {
-            ciudadText.setError("Al menos 4 caracteres");
+            ciudadText.setError("Ciudad con al menos 4 caracteres");
             valid = false;
         } else {
             ciudadText.setError(null);
         }
 
         if (address.isEmpty()) {
-            addressText.setError("Ingrese una contraseña válida");
+            addressText.setError("Ingrese una direccion válida");
             valid = false;
         } else {
             addressText.setError(null);
         }
-
 
         if (email.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             emailText.setError("Ingrese un email válido");
@@ -405,6 +392,34 @@ public class SignUpActivity extends AppCompatActivity {
             valid = false;
         } else {
             reEnterPasswordText.setError(null);
+        }
+
+        if (ClavePrivada.isEmpty() || ClavePrivada.length() < 10) {
+            clavePrivada.setError("Clave privada incorrecta");
+            valid = false;
+        } else {
+            clavePrivada.setError(null);
+        }
+
+        if (ClavePublica.isEmpty() || ClavePublica.length() < 10) {
+            clavePublica.setError("Clave publica incorrecta");
+            valid = false;
+        } else {
+            clavePublica.setError(null);
+        }
+
+        if (marcaVehiculo.isEmpty() || marcaVehiculo.length() < 3) {
+            MarcaVehiculo.setError("Ingrese una marca valida");
+            valid = false;
+        } else {
+            MarcaVehiculo.setError(null);
+        }
+
+        if (modeloVehiculo.isEmpty() || modeloVehiculo.length() < 3) {
+            ModeloVehiculo.setError("Ingrese un modelo valido");
+            valid = false;
+        } else {
+            ModeloVehiculo.setError(null);
         }
 
         return valid;
@@ -449,11 +464,7 @@ public class SignUpActivity extends AppCompatActivity {
                     client.get(null, url, new AsyncHttpResponseHandler(){
                         @Override
                         public void onSuccess(String response) {
-                            if (response.contains("Ok")){
-                                //nada
-                            }else{
-                                Toast.makeText(getApplicationContext(), response, Toast.LENGTH_LONG).show();
-                            }
+                            logear();
                         }
                         @Override
                         public void onFailure(int statusCode, Throwable error, String content){

@@ -154,7 +154,11 @@ public class HistoricFragment extends Fragment {
                 datos2 = new JSONObject(instanciaServicioJSON);
                 Costo = (String) datos2.getString("instanciaServicioCosto");
                 Distancia = (String) datos2.getString("instanciaServicioDistancia");
-                Fecha = (String) datos2.getString("instanciaServicioFechaInicio");
+                Fecha = (String) datos2.getString("instanciaServicioFechaInicioString");
+
+                String[] splitDist = Fecha.split(" ");
+                String fecha = splitDist[0];
+
 
                 UbicacionJSON = (String) datos2.getString("ubicacion");
                 //datos3 tiene los datos de la ubicacion
@@ -185,7 +189,7 @@ public class HistoricFragment extends Fragment {
                     dirD = getAddressFromLatLng(lat, lon);
                 }
                 //Agrego a la lista
-                historial = new Historial(Comentario, Puntaje, Costo, Distancia, dirO, dirD, Fecha);
+                historial = new Historial(Comentario, Puntaje, Costo, Distancia, dirO, dirD, fecha);
                 historialList.add(historial);
 
             }

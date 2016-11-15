@@ -287,6 +287,10 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
         client.get(null, url, new AsyncHttpResponseHandler(){
             @Override
             public void onSuccess(String response) {
+                sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+                SharedPreferences.Editor editor = sharedpreferences.edit();
+                editor.putString(EnViaje, "false");
+                editor.commit();
             }
             @Override
             public void onFailure(int statusCode, Throwable error, String content){
