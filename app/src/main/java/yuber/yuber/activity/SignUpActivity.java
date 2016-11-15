@@ -16,6 +16,10 @@ import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.stripe.android.Stripe;
+import com.stripe.android.TokenCallback;
+import com.stripe.android.model.Card;
+import com.stripe.android.model.Token;
 
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.message.BasicHeader;
@@ -60,6 +64,8 @@ public class SignUpActivity extends AppCompatActivity {
     private String servicioKey;
     private String marcaVehiculo;
     private String modeloVehiculo;
+    private EditText clavePrivada;
+    private EditText clavePublica;
 
     public static final String MyPREFERENCES = "MyPrefs" ;
     public static final String TokenKey = "tokenKey";
@@ -68,6 +74,13 @@ public class SignUpActivity extends AppCompatActivity {
     public static final String ErrorAsociar = "errorAsociar";
     public static final String ServiciosTransporte = "serviciosTransporte";
     private SharedPreferences sharedpreferences;
+
+    //======STRIPE ==================
+    private String cardNumber = "4242424242424242";
+    private String cvc = "123";
+    private int monthSpinner = 1;
+    private int yearSpinner = 2018;
+    private String currencySpinner = "usd";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -86,6 +99,9 @@ public class SignUpActivity extends AppCompatActivity {
         ciudadText = (EditText) findViewById(R.id.input_ciudad);
         MarcaVehiculo = (EditText) findViewById(R.id.input_vehiculoMarca);
         ModeloVehiculo = (EditText) findViewById(R.id.input_vehiculoModelo);
+        //Stripe
+        clavePrivada = (EditText) findViewById(R.id.input_clave_privada);
+        clavePublica = (EditText) findViewById(R.id.input_clave_publica);
 
         signupButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -181,11 +197,10 @@ public class SignUpActivity extends AppCompatActivity {
         temporizadorProv temporizador = new temporizadorProv();
         boolean ok = true;
         ok = registrar();
-        temporizador.esperarXsegundos(1);
         if(ok){
             ok = asociarServicio(email, servicioId);
-            temporizador.esperarXsegundos(1);
             if(ok){
+                saveCreditCard();
                 logear();
             }else{
                 Toast.makeText(getApplicationContext(), "No se pudo asociar el servicio, pongase en contacto con un administrador", Toast.LENGTH_LONG).show();
@@ -235,6 +250,9 @@ public class SignUpActivity extends AppCompatActivity {
         } catch (Exception e) {
             return false;
         }
+        temporizadorProv temporizador = new temporizadorProv();
+        temporizador.esperarXsegundos(1);
+
         String error = sharedpreferences.getString(ErrorRegistrar, "");
         if (error.contains("false")){
             return true;
@@ -260,7 +278,12 @@ public class SignUpActivity extends AppCompatActivity {
                 editor.commit();
             }
         });
+        temporizadorProv temporizador = new temporizadorProv();
+        temporizador.esperarXsegundos(1);
         String error = sharedpreferences.getString(ErrorAsociar, "");
+
+        System.out.println("--->asociarServicio: " + error);
+
         if (error.contains("false")){
             return true;
         }else{
@@ -397,5 +420,65 @@ public class SignUpActivity extends AppCompatActivity {
         startActivity(intent);
         finish();
     }
+
+    public void saveCreditCard() {
+
+        System.out.println("--->cardnumber: " + this.cardNumber);
+
+        Card card = new Card(
+                this.cardNumber,
+                this.monthSpinner,
+                this.yearSpinner,
+                this.cvc);
+        card.setCurrency(this.currencySpinner);
+
+        System.out.println("--->month: " + this.monthSpinner);
+           //startProgress();
+        new Stripe().createToken(
+            card, clavePublica.getText().toString(),
+            new TokenCallback() {
+                public void onSuccess(Token token) {
+                    String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Proveedor/AsociarMecanismoDePago/" + email + "," + token.getId().toString() + "," + clavePrivada.getText().toString();
+
+                    System.out.println("--->url: " + url);
+                    System.out.println("--->clave publica: " + clavePublica.getText().toString());
+
+
+                    AsyncHttpClient client = new AsyncHttpClient();
+                    ByteArrayEntity entity = null;
+                    client.get(null, url, new AsyncHttpResponseHandler(){
+                        @Override
+                        public void onSuccess(String response) {
+                            if (response.contains("Ok")){
+                                //nada
+                            }else{
+                                Toast.makeText(getApplicationContext(), response, Toast.LENGTH_LONG).show();
+                            }
+                        }
+                        @Override
+                        public void onFailure(int statusCode, Throwable error, String content){
+                            if(statusCode == 404){
+                                Toast.makeText(getApplicationContext(), "Requested resource not found", Toast.LENGTH_LONG).show();
+                            }else if(statusCode == 500){
+                                Toast.makeText(getApplicationContext(), "Something went wrong at server end", Toast.LENGTH_LONG).show();
+                            }else{
+                                Toast.makeText(getApplicationContext(), "Unexpected Error occcured! [Most common Error: Device might not be connected to Internet or remote server is not up and running]", Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    });
+                    //finishProgress();
+                }
+                public void onError(Exception error) {
+                    handleError(error.getLocalizedMessage());
+                    System.out.println("--->error: " + error.getMessage());
+                    //finishProgress();
+                }
+            });
+    }
+
+    private void handleError(String error) {
+    }
+
+
 
 }

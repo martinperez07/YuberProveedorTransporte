@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements FragmentDrawer.Fr
     public static final String EmailKey = "emailKey";
     public static final String TokenKey = "tokenKey";
     public static final String EnViaje = "enViaje";
+    public static final String EstoyTrabajando = "EstoyTrabajando";
     SharedPreferences sharedpreferences;
 
 
@@ -68,9 +69,13 @@ public class MainActivity extends AppCompatActivity implements FragmentDrawer.Fr
                 SharedPreferences sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
                 String email = sharedpreferences.getString(EmailKey, "");
                 while(true) {
-                    if (mapFragment != null)
-                        mapFragment.actualizarCoordenadas(email);
-                    temp.esperarXsegundos(10);
+                    SharedPreferences sharedpreferences2 = getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+                    String trabajando = sharedpreferences2.getString(EstoyTrabajando, "");
+                    if (trabajando.contains("true")) {
+                        if (mapFragment != null)
+                            mapFragment.actualizarCoordenadas(email);
+                        temp.esperarXsegundos(10);
+                    }
                 }
             }
         }).start();
@@ -172,13 +177,19 @@ public class MainActivity extends AppCompatActivity implements FragmentDrawer.Fr
         String title = getString(R.string.app_name);
         switch (position) {
             case 0:
-                //fragment = new MpFragment();
                 fragment = mapFragment;
                 title = getString(R.string.title_map);
                 break;
             case 1:
                 fragment = new HistoricFragment();
                 title = getString(R.string.title_historic_viaje);
+                break;
+            case 2:
+                Bundle args = new Bundle();
+                FragmentDialogYuberRetirarFondos newFragmentDialog = new FragmentDialogYuberRetirarFondos();
+                newFragmentDialog.setArguments(args);
+                newFragmentDialog.show(getSupportFragmentManager(), "TAG");
+
                 break;
             default:
                 break;

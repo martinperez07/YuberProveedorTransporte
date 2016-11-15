@@ -44,11 +44,13 @@
 
     <string name="nav_item_mapa">Mapa</string>
     <string name="nav_item_historic">Historial</string>
+    <string name="nav_item_Retirar">Retirar fondos</string>
 
     <!-- navigation drawer item labels  -->
     <string-array name="nav_drawer_labels">
         <item>@string/nav_item_mapa</item>
         <item>@string/nav_item_historic</item>
+        <item>@string/nav_item_Retirar</item>
     </string-array>
 
     <string name="title_map">Mapa</string>
@@ -90,5 +92,7 @@
         <item>Media</item>
         <item>Baja</item>
     </string-array>
+
+    <string name="validationErrors">Validation Errors</string>
 
 </resources>

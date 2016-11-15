@@ -29,8 +29,6 @@ public class Intro extends AppCompatActivity {
     private String Puerto = "8080";
     private static final String TAG = "INTRO";
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
