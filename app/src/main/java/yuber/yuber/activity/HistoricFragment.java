@@ -21,11 +21,12 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import yuber.yuber.R;
@@ -154,11 +155,13 @@ public class HistoricFragment extends Fragment {
                 datos2 = new JSONObject(instanciaServicioJSON);
                 Costo = (String) datos2.getString("instanciaServicioCosto");
                 Distancia = (String) datos2.getString("instanciaServicioDistancia");
-                Fecha = (String) datos2.getString("instanciaServicioFechaInicioString");
+                Fecha = (String) datos2.getString("instanciaServicioFechaInicio");
 
-                String[] splitDist = Fecha.split(" ");
-                String fecha = splitDist[0];
-
+                Long longFecha = Long.parseLong(Fecha);
+                final Calendar cal = Calendar.getInstance();
+                cal.setTimeInMillis(longFecha);
+                final SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+                Fecha = f.format(cal.getTime());
 
                 UbicacionJSON = (String) datos2.getString("ubicacion");
                 //datos3 tiene los datos de la ubicacion
@@ -189,11 +192,10 @@ public class HistoricFragment extends Fragment {
                     dirD = getAddressFromLatLng(lat, lon);
                 }
                 //Agrego a la lista
-                historial = new Historial(Comentario, Puntaje, Costo, Distancia, dirO, dirD, fecha);
+                historial = new Historial(Comentario, Puntaje, Costo, Distancia, dirO, dirD, Fecha);
                 historialList.add(historial);
-
             }
-        } catch (JSONException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
