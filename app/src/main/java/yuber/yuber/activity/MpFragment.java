@@ -8,12 +8,15 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -25,6 +28,8 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -36,11 +41,22 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 import yuber.yuber.R;
 
@@ -48,18 +64,20 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
         GoogleApiClient.OnConnectionFailedListener,
         GoogleMap.OnInfoWindowClickListener,
         GoogleMap.OnMapClickListener,
-        GoogleMap.OnMarkerClickListener {
+        GoogleMap.OnMarkerClickListener,
+        LocationListener {
 
     MapView mMapView;
     private GoogleMap googleMap;
     private static int REQUEST_LOCATION;
 
+    LocationRequest mLocationRequest;
     private GoogleApiClient mGoogleApiClient;
     private Location mCurrentLocation;
-    private Marker mOrigenMarker;
     private LatLng mOrigenLatLng;
-    private Marker mDestinationMarker;
-
+    private Marker mOrigenMarker;
+    private String mDistanciaViaje = "-1";
+    private ArrayList<LatLng> markerPoints;
 
     private static final String TAG = "MAPA";
 
@@ -160,6 +178,9 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
             }
         }
 
+        //PARA LA CREACION DE RUTAS
+        // Initializing array
+        markerPoints = new ArrayList<LatLng>();
         return v;
     }
 
@@ -230,6 +251,14 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
         return clickListtener;
     }
 
+    private void borrarRutaYMarcadores() {
+        // Removes all the points from Google Map
+        googleMap.clear();
+
+        // Removes all the points in the ArrayList
+        markerPoints.clear();
+    }
+
     public void comenzarViaje(){
         String instanciaID = sharedpreferences.getString(ClienteInstanciaServicioKey, "");
         String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Proveedor/IniciarServicio/" + instanciaID;
@@ -252,6 +281,7 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
     }
 
     public void cancelarViaje(){
+        borrarRutaYMarcadores();
         String instanciaID = sharedpreferences.getString(ClienteInstanciaServicioKey, "");
         String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Cliente/CancelarPedido/" + instanciaID;
         AsyncHttpClient client = new AsyncHttpClient();
@@ -273,10 +303,12 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
     }
 
     public void terminarViaje(){
+        borrarRutaYMarcadores();
   //      SharedPreferences sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
         String instanciaID = sharedpreferences.getString(ClienteInstanciaServicioKey, "");
-
-        String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Proveedor/FinServicio/" + instanciaID + ",5";
+        Double distancia = Double.parseDouble(mDistanciaViaje);
+        int distanciaRedondeada = (int) Math.round(distancia);
+        String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Proveedor/FinServicio/" + instanciaID + "," + distanciaRedondeada;
         AsyncHttpClient client = new AsyncHttpClient();
         client.get(null, url, new AsyncHttpResponseHandler(){
             @Override
@@ -366,9 +398,16 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
                     LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         }
 
-        mCurrentLocation = LocationServices
-                .FusedLocationApi
-                .getLastLocation(mGoogleApiClient);
+
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(1000);
+        mLocationRequest.setFastestInterval(1000);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        if (ContextCompat.checkSelfPermission(getActivity(),
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        }
 
         initCamera(mCurrentLocation);
     }
@@ -474,14 +513,14 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
                 mostrarDialCancelaronViaje();
             }else if(ACTION_INTENT_DESTINO_ELEGIDO.equals(intent.getAction()) ){
                 String jsonDestino = intent.getStringExtra("DATOS_DESTINO");
+
                 //PARA QUE LO DE ABAJO? CREO QUE NO ES NECESARIO...
                 SharedPreferences.Editor editor = sharedpreferences.edit();
                 editor.putString(ClienteUbicacionDestinoKey, jsonDestino);
                 editor.commit();
                 //fin innecesariedad?
+
                 ponerMarcadorDestino(jsonDestino);
-                //pongo el punto en el mapa y trazo la ruta
-                Toast.makeText(getActivity().getApplicationContext(), "pongo el punto en el mapa y trazo la ruta", Toast.LENGTH_LONG).show();
             }else if(ACTION_PRENDE_INICIAR.equals(intent.getAction())) {
                 mostrarIV();
                 ponerMarcadorOrigen();
@@ -505,14 +544,41 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
         double latitud = -34.9133764;
         double longitud = -56.1690546;
         try {
-            JSONObject datosUsuario = new JSONObject(jsonDestino);
-            JSONObject datosOrigenUsuario = new JSONObject(datosUsuario.getString("ubicacion"));
-            latitud = datosOrigenUsuario.getDouble("latitud");
-            longitud = datosOrigenUsuario.getDouble("longitud");
+            JSONObject dataUbicacion = new JSONObject(jsonDestino);
+            latitud = Double.parseDouble(dataUbicacion.getString("latitud"));
+            longitud = Double.parseDouble(dataUbicacion.getString("longitud"));
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        mOrigenLatLng = new LatLng(latitud,longitud);
+
+
+        LatLng destinoLatLng = new LatLng(latitud,longitud);
+
+        // Adding new item to the ArrayList
+        markerPoints.add(destinoLatLng);
+
+        markerPoints.add(destinoLatLng);
+        MarkerOptions options = new MarkerOptions().position(destinoLatLng);
+        options.icon(BitmapDescriptorFactory.defaultMarker());
+        Marker mDestinationMarker = googleMap.addMarker(options);
+        mDestinationMarker.setTitle("Destino cliente");
+
+
+
+        // Checks, whether start and end locations are captured
+        if(markerPoints.size() >= 2){
+            LatLng origin = markerPoints.get(0);
+            LatLng dest = markerPoints.get(1);
+
+            // Getting URL to the Google Directions API
+            String url = getDirectionsUrl(origin, dest);
+
+            DownloadTask downloadTask = new DownloadTask();
+
+            // Start downloading json data from Google Directions API
+            downloadTask.execute(url);
+        }
+
     }
 
     private void eliminarMarcadorOrigen(){
@@ -522,11 +588,12 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
 
     private void ponerMarcadorOrigen() {
         eliminarMarcadorOrigen();
-        MarkerOptions options;
-        options = new MarkerOptions().position(mOrigenLatLng);
-        options.icon(BitmapDescriptorFactory.defaultMarker());
+        MarkerOptions options = new MarkerOptions().position(mOrigenLatLng);
+        options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
         mOrigenMarker = googleMap.addMarker(options);
         mOrigenMarker.setTitle("Ubicacion cliente");
+        // Adding new item to the ArrayList
+        markerPoints.add(mOrigenLatLng);
     }
 
     private void mostrarDialAceptarRechazar(String JUser){
@@ -580,5 +647,199 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
             });
         }
     }
+
+
+
+    @Override
+    public void onLocationChanged(Location location)
+    {
+        mCurrentLocation = location;
+    }
+
+
+    private String getDirectionsUrl(LatLng origin,LatLng dest){
+
+        // Origin of route
+        String str_origin = "origin="+origin.latitude+","+origin.longitude;
+
+        // Destination of route
+        String str_dest = "destination="+dest.latitude+","+dest.longitude;
+
+
+        // Sensor enabled
+        String sensor = "sensor=false";
+
+        // Building the parameters to the web service
+        String parameters = str_origin+"&"+str_dest+"&"+sensor;
+
+        // Output format
+        String output = "json";
+
+        // Building the url to the web service
+        String url = "https://maps.googleapis.com/maps/api/directions/"+output+"?"+parameters;
+
+
+        return url;
+    }
+
+    /** A method to download json data from url */
+    private String downloadUrl(String strUrl) throws IOException {
+        String data = "";
+        InputStream iStream = null;
+        HttpURLConnection urlConnection = null;
+        try{
+            URL url = new URL(strUrl);
+
+            // Creating an http connection to communicate with url
+            urlConnection = (HttpURLConnection) url.openConnection();
+
+            // Connecting to url
+            urlConnection.connect();
+
+            // Reading data from url
+            iStream = urlConnection.getInputStream();
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
+
+            StringBuffer sb  = new StringBuffer();
+
+            String line = "";
+            while( ( line = br.readLine())  != null){
+                sb.append(line);
+            }
+
+            data = sb.toString();
+
+            br.close();
+
+        }catch(Exception e){
+            Log.d("MAAAAAAL", e.toString());
+        }finally{
+            iStream.close();
+            urlConnection.disconnect();
+        }
+        return data;
+    }
+
+
+
+    // Fetches data from url passed
+    private class DownloadTask extends AsyncTask<String, Void, String> {
+
+        // Downloading data in non-ui thread
+        @Override
+        protected String doInBackground(String... url) {
+
+            // For storing data from web service
+            String data = "";
+
+            try{
+                // Fetching the data from web service
+                data = downloadUrl(url[0]);
+            }catch(Exception e){
+                Log.d("Background Task",e.toString());
+            }
+            return data;
+        }
+
+        // Executes in UI thread, after the execution of
+        // doInBackground()
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+
+            ParserTask parserTask = new ParserTask();
+
+            // Invokes the thread for parsing the JSON data
+            parserTask.execute(result);
+
+        }
+    }
+
+    /** A class to parse the Google Places in JSON format */
+    private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String,String>>> >{
+
+        // Parsing the data in non-ui thread
+        @Override
+        protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
+
+            JSONObject jObject;
+            List<List<HashMap<String, String>>> routes = null;
+
+            try{
+                jObject = new JSONObject(jsonData[0]);
+                DirectionsJSONParser parser = new DirectionsJSONParser();
+
+                // Starts parsing data
+                routes = parser.parse(jObject);
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+            return routes;
+        }
+
+        // Executes in UI thread, after the parsing process
+        @Override
+        protected void onPostExecute(List<List<HashMap<String, String>>> result) {
+            ArrayList<LatLng> points = null;
+            PolylineOptions lineOptions = null;
+            MarkerOptions markerOptions = new MarkerOptions();
+            String distance = "";
+            String duration = "";
+
+
+
+            if(result.size()<1){
+                Toast.makeText(getActivity().getBaseContext(), "No Points", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+
+            // Traversing through all the routes
+            for(int i=0;i<result.size();i++){
+                points = new ArrayList<LatLng>();
+                lineOptions = new PolylineOptions();
+
+                // Fetching i-th route
+                List<HashMap<String, String>> path = result.get(i);
+
+                // Fetching all the points in i-th route
+                for(int j=0;j<path.size();j++){
+                    HashMap<String,String> point = path.get(j);
+
+                    if(j==0){	// Get distance from the list
+                        distance = (String)point.get("distance");
+                        continue;
+                    }else if(j==1){ // Get duration from the list
+                        duration = (String)point.get("duration");
+                        continue;
+                    }
+
+                    double lat = Double.parseDouble(point.get("lat"));
+                    double lng = Double.parseDouble(point.get("lng"));
+                    LatLng position = new LatLng(lat, lng);
+
+                    points.add(position);
+                }
+
+                // Adding all the points in the route to LineOptions
+                lineOptions.addAll(points);
+                lineOptions.width(2);
+                lineOptions.color(Color.RED);
+
+            }
+
+            String[] splited = distance.split("\\s+");
+            mDistanciaViaje = splited[0];
+
+            Toast.makeText(getActivity(), "Distancia: " + distance, Toast.LENGTH_SHORT).show();
+
+            // Drawing polyline in the Google Map for the i-th route
+            googleMap.addPolyline(lineOptions);
+        }
+    }
+
+
+
 
 }

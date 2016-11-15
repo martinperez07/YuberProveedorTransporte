@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -26,6 +27,9 @@ public class Intro extends AppCompatActivity {
 
     private String Ip = "54.203.12.195";
     private String Puerto = "8080";
+    private static final String TAG = "INTRO";
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +40,7 @@ public class Intro extends AppCompatActivity {
                 String value = getIntent().getExtras().getString(key);
             }
         }
+        Log.d(TAG, "Antes de conseguir el token con Firebase");
         String token = FirebaseInstanceId.getInstance().getToken();
         //Guardo el token en session
         SharedPreferences sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
@@ -44,11 +49,13 @@ public class Intro extends AppCompatActivity {
         editor.putString(EnViaje, "false");
         editor.commit();
         //Combruebo si ya tengo session.
+        Log.d(TAG, "ANTES DE TENGOSESSION(token)");
         TengoSession(token);
     }
 
     public void TengoSession(String token){
         String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Proveedor/ValidarSesion/" + token;
+        Log.d(TAG, "URL get: " + url);
         JSONObject obj = new JSONObject();
         AsyncHttpClient client = new AsyncHttpClient();
         RequestHandle Rq = client.get(null, url, new AsyncHttpResponseHandler(){

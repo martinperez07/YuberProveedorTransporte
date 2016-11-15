@@ -7,6 +7,7 @@ import android.support.v4.content.LocalBroadcastManager;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+import com.google.gson.Gson;
 
 import java.util.Map;
 
@@ -28,13 +29,13 @@ public class MiFirebaseMessagingService extends FirebaseMessagingService {
         String tituloNotificacion = remoteMessage.getNotification().getTitle();
         if (tabajando.contains("true")) {
             if (enViaje.contains("false")) {
-                if (tituloNotificacion.equals("Nueva solicitud")) {
+                if (tituloNotificacion.equals("Nueva solicitud"))
                     sendBodyToMapFragment(remoteMessage.getData());
-                }
-            } else {
-                if (tituloNotificacion.equals("Solicitud cancelada")) {
+            }
+            else {
+                if (tituloNotificacion.equals("Solicitud cancelada"))
                     sendBodyToMapFragmentCancelado();
-                } else if (tituloNotificacion.equals("Destino elegido")) {
+                else if (tituloNotificacion.equals("Destino elegido")) {
                     sendBodyToMapFragmentComenzarViaje(remoteMessage.getData());
                 }
             }
@@ -54,9 +55,10 @@ public class MiFirebaseMessagingService extends FirebaseMessagingService {
     }
 
     private void sendBodyToMapFragmentComenzarViaje(Map<String, String> data) {
-        String aux = data.toString();
+        Gson gson = new Gson();
+        String jsonData = gson.toJson(data);
         Intent intent = new Intent("MpFragment.action.DESTINO_ELEGIDO");
-        intent.putExtra("DATOS_DESTINO", aux);
+        intent.putExtra("DATOS_DESTINO", jsonData);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
