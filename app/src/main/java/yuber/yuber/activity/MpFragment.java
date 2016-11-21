@@ -511,6 +511,7 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
             }else if(ACTION_INTENT_CANCELARON_VIAJE.equals(intent.getAction()) ){
                 //muestro el dialogo
                 mostrarDialCancelaronViaje();
+                eliminarMarcadorOrigen();
             }else if(ACTION_INTENT_DESTINO_ELEGIDO.equals(intent.getAction()) ){
                 String jsonDestino = intent.getStringExtra("DATOS_DESTINO");
 
