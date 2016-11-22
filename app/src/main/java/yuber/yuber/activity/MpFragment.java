@@ -108,6 +108,7 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
     public static final String ClienteInstanciaServicioKey = "clienteInstanciaServicioKey";
     public static final String ClienteUbicacionDestinoKey = "ubicacionDestinoKey";
     public static final String EstadoDelViaje = "estadoDelViaje";
+    public static final String DistanciaViaje = "distanciaViaje";
     public static final String EnViaje = "enViaje";
     private SharedPreferences sharedpreferences;
     private String Ip = "54.203.12.195";
@@ -307,6 +308,10 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
 
     public void terminarViaje(){
         borrarRutaYMarcadores();
+        sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+        SharedPreferences.Editor editor = sharedpreferences.edit();
+        editor.putString(DistanciaViaje, mDistanciaViaje);
+        editor.commit();
         String instanciaID = sharedpreferences.getString(ClienteInstanciaServicioKey, "");
         String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Proveedor/FinServicio/" + instanciaID + "," + mDistanciaViaje;
         AsyncHttpClient client = new AsyncHttpClient();
@@ -541,7 +546,6 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
     };
 
     private void ponerMarcadorDestino(String jsonDestino) {
-        Log.d(TAG, "Adentro de ponerMarcadorDestino" + jsonDestino);
         double latitud = -34.9133764;
         double longitud = -56.1690546;
         try {
@@ -552,9 +556,7 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
             e.printStackTrace();
         }
 
-
         LatLng destinoLatLng = new LatLng(latitud,longitud);
-
         // Adding new item to the ArrayList
         markerPoints.add(destinoLatLng);
 
@@ -563,8 +565,6 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
         options.icon(BitmapDescriptorFactory.defaultMarker());
         Marker mDestinationMarker = googleMap.addMarker(options);
         mDestinationMarker.setTitle("Destino cliente");
-
-
 
         // Checks, whether start and end locations are captured
         if(markerPoints.size() >= 2){

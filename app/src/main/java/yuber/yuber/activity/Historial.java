@@ -10,9 +10,6 @@ public class Historial {
     private String DireccionD;
     private String Fecha;
 
-    public Historial() {
-    }
-
     public Historial(String comentario, String puntaje, String costo, String distancia, String direccionO,String direccionD, String fecha) {
         Comentario = comentario;
         Puntaje = puntaje;

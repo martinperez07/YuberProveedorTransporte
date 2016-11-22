@@ -24,7 +24,6 @@ public class Intro extends AppCompatActivity {
     public static final String TokenKey = "tokenKey";
     public static final String EnViaje = "enViaje";
     SharedPreferences sharedpreferences;
-
     private String Ip = "54.203.12.195";
     private String Puerto = "8080";
     private static final String TAG = "INTRO";
@@ -38,7 +37,6 @@ public class Intro extends AppCompatActivity {
                 String value = getIntent().getExtras().getString(key);
             }
         }
-        Log.d(TAG, "Antes de conseguir el token con Firebase");
         String token = FirebaseInstanceId.getInstance().getToken();
         //Guardo el token en session
         SharedPreferences sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
@@ -47,7 +45,6 @@ public class Intro extends AppCompatActivity {
         editor.putString(EnViaje, "false");
         editor.commit();
         //Combruebo si ya tengo session.
-        Log.d(TAG, "ANTES DE TENGOSESSION(token)");
         TengoSession(token);
     }
 

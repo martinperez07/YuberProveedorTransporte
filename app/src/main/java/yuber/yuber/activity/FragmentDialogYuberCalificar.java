@@ -3,10 +3,12 @@ package yuber.yuber.activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.location.Geocoder;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -15,6 +17,11 @@ import android.widget.TextView;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 
 import yuber.yuber.R;
 
@@ -33,6 +40,7 @@ public class FragmentDialogYuberCalificar extends DialogFragment {
     public static final String ClienteUbicacionOrigenKey = "ubicacionOrigenKey";
     public static final String ClienteTelefonoKey = "clienteTelefonoKey";
     public static final String ClienteUbicacionDestinoKey = "ubicacionDestinoKey";
+    public static final String DistanciaViaje = "distanciaViaje";
     public static final String EnViaje = "enViaje";
 
     SharedPreferences sharedpreferences;
@@ -81,11 +89,69 @@ public class FragmentDialogYuberCalificar extends DialogFragment {
                         editor.commit();
                         //Envio el puntaje al servidor
                         enviarPuntaje();
+                        agregoALista();
                         dismiss();
                     }
                 }
         );
+
         return builder.create();
+    }
+
+    public void agregoALista(){
+        SharedPreferences sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+        String instanciaID = sharedpreferences.getString(ClienteInstanciaServicioKey, "");
+
+        String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Servicios/ObtenerInstanciaServicio/" + instanciaID;
+        AsyncHttpClient client = new AsyncHttpClient();
+        client.get(null, url, new AsyncHttpResponseHandler(){
+            @Override
+            public void onSuccess(String response) {
+                try {
+
+                    JSONObject json = new JSONObject(response);
+                    JSONObject ubicacionDestino = new JSONObject(json.getString("ubicacionDestino"));
+                    JSONObject ubicacion = new JSONObject(json.getString("ubicacion"));
+                    String costo = json.getString("instanciaServicioCosto");
+                    String puntaje = json.getString("instanciaServicioPuntaje");
+                    String fecha  = json.getString("instanciaServicioFechaInicio");
+                    String dist = json.getString("instanciaServicioDistancia");
+
+                    Double latO = ubicacion.getDouble("latitud");
+                    Double lonO = ubicacion.getDouble("longitud");
+                    Double latD = ubicacion.getDouble("latitud");
+                    Double lonD = ubicacion.getDouble("longitud");
+
+                    String dirO = getAddressFromLatLng(latO, lonO);
+                    String dirD = getAddressFromLatLng(latD, lonD);
+
+                    Historial hst = new Historial("Sin comentario", puntaje, costo, dist, dirO, dirD, fecha);
+                    MainActivity mainActivity = (MainActivity)getActivity();
+                    mainActivity.agregarEnHistorial(hst);
+                } catch (JSONException e) {
+                }
+            }
+            @Override
+            public void onFailure(int statusCode, Throwable error, String content){
+            }
+        });
+    }
+
+    private String getAddressFromLatLng(double lat, double lon) {
+        Geocoder geocoder = new Geocoder( getActivity() );
+        String address = "";
+        try {
+            address =geocoder
+                    .getFromLocation( lat, lon, 1 )
+                    .get( 0 ).getAddressLine( 0 ) ;
+        } catch (IOException e ) {
+            // this is the line of code that sends a real error message to the  log
+            Log.e("ERROR", "ERROR IN CODE: " + e.toString());
+            // this is the line that prints out the location in the code where the error occurred.
+            e.printStackTrace();
+            return "ERROR_IN_CODE";
+        }
+        return address;
     }
 
     public void enviarPuntaje(){
@@ -94,10 +160,9 @@ public class FragmentDialogYuberCalificar extends DialogFragment {
         String puntaje;
         float number = ratingBarPuntaje.getRating();
         int punt = new Float(number).intValue();
-
         puntaje = String.valueOf(number);
-        String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Cliente/PuntuarCliente/" + punt + ",Sin comentario," + instanciaID;
 
+        String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Cliente/PuntuarCliente/" + punt + ",Sin comentario," + instanciaID;
         AsyncHttpClient client = new AsyncHttpClient();
         client.get(null, url, new AsyncHttpResponseHandler(){
             @Override
