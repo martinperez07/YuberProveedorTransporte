@@ -1,5 +1,6 @@
 package yuber.yuber.activity;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -51,12 +52,19 @@ public class MainActivity extends AppCompatActivity implements FragmentDrawer.Fr
     public static final String EstoyTrabajando = "EstoyTrabajando";
     SharedPreferences sharedpreferences;
     private List<Historial> ListaHistorial;
+    private String trabajando = "false";
+    private String correo = "-";
+    ProgressDialog DialogCargando;
 
     MpFragment mapFragment = new MpFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        DialogCargando = new ProgressDialog(this);
+        DialogCargando.setMessage("Espere unos segundos...");
+        DialogCargando.setCancelable(false);
 
         setContentView(R.layout.activity_map);
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -69,12 +77,11 @@ public class MainActivity extends AppCompatActivity implements FragmentDrawer.Fr
         //Disparo el thread para actualizar las coordenadas del proveedor
         new Thread(new Runnable() {
             public void run() {
+                SharedPreferences sharedpreferences2 = getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+                trabajando = sharedpreferences2.getString(EstoyTrabajando, "");
+                String email = sharedpreferences2.getString(EmailKey, "");
                 temporizadorProv temp = new temporizadorProv();
-                SharedPreferences sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
-                String email = sharedpreferences.getString(EmailKey, "");
                 while(true) {
-                    SharedPreferences sharedpreferences2 = getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
-                    String trabajando = sharedpreferences2.getString(EstoyTrabajando, "");
                     if (trabajando.contains("true")) {
                         if (mapFragment != null)
                             mapFragment.actualizarCoordenadas(email);
@@ -83,6 +90,7 @@ public class MainActivity extends AppCompatActivity implements FragmentDrawer.Fr
                 }
             }
         }).start();
+        MapJornadaActivaFragment m = new MapJornadaActivaFragment();
 
         cargarHistorial();
 
@@ -149,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements FragmentDrawer.Fr
                     Long longFecha = Long.parseLong(Fecha);
                     final Calendar cal = Calendar.getInstance();
                     cal.setTimeInMillis(longFecha);
-                    final SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+                    final SimpleDateFormat f = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
                     Fecha = f.format(cal.getTime());
 
                     String UbicacionJSON = (String) datos2.getString("ubicacion");
@@ -258,9 +266,11 @@ public class MainActivity extends AppCompatActivity implements FragmentDrawer.Fr
                 Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
             }
             entity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
+            DialogCargando.show();
             RequestHandle Rq = client.post(null, url, entity, "application/json", new AsyncHttpResponseHandler(){
                 @Override
                 public void onSuccess(String response) {
+                    DialogCargando.hide();
                     if (response.contains("true") ){
                         cambiarALogin();
                     }else{
@@ -269,6 +279,7 @@ public class MainActivity extends AppCompatActivity implements FragmentDrawer.Fr
                 }
                 @Override
                 public void onFailure(int statusCode, Throwable error, String content){
+                    DialogCargando.hide();
                     if(statusCode == 404){
                         Toast.makeText(getApplicationContext(), "Requested resource not found", Toast.LENGTH_LONG).show();
                     }else if(statusCode == 500){

@@ -22,6 +22,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import yuber.yuber.R;
 
@@ -29,6 +31,8 @@ public class FragmentDialogYuberCalificar extends DialogFragment {
 
     private String Ip = "54.203.12.195";
     private String Puerto = "8080";
+    private String idInstance;
+    private String punta;
 
     private static final String TAG = FragmentDialogYuberCancelaronViaje.class.getSimpleName();
     private RatingBar ratingBarPuntaje;
@@ -42,6 +46,8 @@ public class FragmentDialogYuberCalificar extends DialogFragment {
     public static final String ClienteUbicacionDestinoKey = "ubicacionDestinoKey";
     public static final String DistanciaViaje = "distanciaViaje";
     public static final String EnViaje = "enViaje";
+
+    MainActivity mainActivity;
 
     SharedPreferences sharedpreferences;
 
@@ -57,11 +63,12 @@ public class FragmentDialogYuberCalificar extends DialogFragment {
     public AlertDialog createLoginDialogo() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
+        sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
+
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View v = inflater.inflate(R.layout.dialogo_calificar, null);
         builder.setView(v);
 
-        SharedPreferences sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
         String Nombre = sharedpreferences.getString(ClienteNombreKey, "");
         String Apellido = sharedpreferences.getString(ClienteApellidoKey, "");
 
@@ -89,44 +96,49 @@ public class FragmentDialogYuberCalificar extends DialogFragment {
                         editor.commit();
                         //Envio el puntaje al servidor
                         enviarPuntaje();
-                        agregoALista();
                         dismiss();
                     }
                 }
         );
+        mainActivity = (MainActivity)getActivity();
 
         return builder.create();
     }
 
     public void agregoALista(){
-        SharedPreferences sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
-        String instanciaID = sharedpreferences.getString(ClienteInstanciaServicioKey, "");
-
-        String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Servicios/ObtenerInstanciaServicio/" + instanciaID;
+        //String instanciaID = sharedpreferences.getString(ClienteInstanciaServicioKey, "");
+        System.out.print("--->Entre a  agregar a lista" + idInstance);
+        String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Servicios/ObtenerInstanciaServicio/" + idInstance;
         AsyncHttpClient client = new AsyncHttpClient();
         client.get(null, url, new AsyncHttpResponseHandler(){
             @Override
             public void onSuccess(String response) {
                 try {
-
                     JSONObject json = new JSONObject(response);
                     JSONObject ubicacionDestino = new JSONObject(json.getString("ubicacionDestino"));
                     JSONObject ubicacion = new JSONObject(json.getString("ubicacion"));
                     String costo = json.getString("instanciaServicioCosto");
-                    String puntaje = json.getString("instanciaServicioPuntaje");
+                    String puntaje = punta;
+
                     String fecha  = json.getString("instanciaServicioFechaInicio");
+                    Long longFecha = Long.parseLong(fecha);
+                    final Calendar cal = Calendar.getInstance();
+                    cal.setTimeInMillis(longFecha);
+                    final SimpleDateFormat f = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
+                    fecha = f.format(cal.getTime());
+
                     String dist = json.getString("instanciaServicioDistancia");
 
                     Double latO = ubicacion.getDouble("latitud");
                     Double lonO = ubicacion.getDouble("longitud");
-                    Double latD = ubicacion.getDouble("latitud");
-                    Double lonD = ubicacion.getDouble("longitud");
+                    Double latD = ubicacionDestino.getDouble("latitud");
+                    Double lonD = ubicacionDestino.getDouble("longitud");
 
                     String dirO = getAddressFromLatLng(latO, lonO);
                     String dirD = getAddressFromLatLng(latD, lonD);
 
                     Historial hst = new Historial("Sin comentario", puntaje, costo, dist, dirO, dirD, fecha);
-                    MainActivity mainActivity = (MainActivity)getActivity();
+
                     mainActivity.agregarEnHistorial(hst);
                 } catch (JSONException e) {
                 }
@@ -138,7 +150,7 @@ public class FragmentDialogYuberCalificar extends DialogFragment {
     }
 
     private String getAddressFromLatLng(double lat, double lon) {
-        Geocoder geocoder = new Geocoder( getActivity() );
+        Geocoder geocoder = new Geocoder( mainActivity );
         String address = "";
         try {
             address =geocoder
@@ -157,16 +169,18 @@ public class FragmentDialogYuberCalificar extends DialogFragment {
     public void enviarPuntaje(){
         SharedPreferences sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
         String instanciaID = sharedpreferences.getString(ClienteInstanciaServicioKey, "");
-        String puntaje;
+        idInstance = instanciaID;
         float number = ratingBarPuntaje.getRating();
         int punt = new Float(number).intValue();
-        puntaje = String.valueOf(number);
+        String puntaje = String.valueOf(number);
+        punta = puntaje;
 
         String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Cliente/PuntuarCliente/" + punt + ",Sin comentario," + instanciaID;
         AsyncHttpClient client = new AsyncHttpClient();
         client.get(null, url, new AsyncHttpResponseHandler(){
             @Override
             public void onSuccess(String response) {
+                agregoALista();
             }
             @Override
             public void onFailure(int statusCode, Throwable error, String content){

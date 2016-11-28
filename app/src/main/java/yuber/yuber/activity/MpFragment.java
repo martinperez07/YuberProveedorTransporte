@@ -1,7 +1,6 @@
 package yuber.yuber.activity;
 
 import android.Manifest;
-import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -23,7 +22,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.Switch;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -93,15 +91,10 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
     public static final String ACTION_APAGA_FIN = "MpFragment.action.APAGA_FIN";
     public static final String ACTION_MARCAR_ORIGEN = "MpFragment.action.MARCAR_ORIGEN";
 
-
-
-    private Switch JornadaActiva;
-
     private enum estado_app {YENDO_CLIENTE, ESPERANDO_CLIENTE, EN_VIAJE};
     private estado_app estado = estado_app.ESPERANDO_CLIENTE;
     private Fragment actualFragment = null;
 
-    ProgressDialog prgDialog;
     Fragment topFragment = null;
 
     public static final String MyPREFERENCES = "MyPrefs" ;
@@ -128,18 +121,12 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
         mMapView = (MapView) v.findViewById(R.id.mapView);
         mMapView.onCreate(savedInstanceState);
         mMapView.onResume();
-
         try {
             MapsInitializer.initialize(getActivity().getApplicationContext());
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         mMapView.getMapAsync(this);
-
-        prgDialog = new ProgressDialog(getActivity());
-        prgDialog.setMessage("Please wait...");
-        prgDialog.setCancelable(false);
 
         topFragment = new MapJornadaActivaFragment();
         FragmentManager fragmentManager = getChildFragmentManager();
@@ -177,10 +164,8 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
                 mostrarFV();
             }
         }
-
-        //PARA LA CREACION DE RUTAS
-        // Initializing array
         markerPoints = new ArrayList<LatLng>();
+
         return v;
     }
 
@@ -338,7 +323,6 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
         LatLng myLocatLatLng;
         LatLng mdeoLatLng = new LatLng(-34, -56);
         Location myLocation = null;
-
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
@@ -359,9 +343,7 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         setHasOptionsMenu(true);
-
         mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -602,6 +584,7 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
         args.putString("DatosUsuario", JUser);
         FragmentDialogYuberAceptarRechazar newFragmentDialog = new FragmentDialogYuberAceptarRechazar();
         newFragmentDialog.setArguments(args);
+        newFragmentDialog.setCancelable(false);
         newFragmentDialog.show(getActivity().getSupportFragmentManager(), "TAG");
     }
 
@@ -618,6 +601,7 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
         Bundle args = new Bundle();
         FragmentDialogYuberCalificar newFragmentDialog = new FragmentDialogYuberCalificar();
         newFragmentDialog.setArguments(args);
+        newFragmentDialog.setCancelable(false);
         newFragmentDialog.show(getActivity().getSupportFragmentManager(), "TAG");
     }
 

@@ -437,9 +437,6 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     public void saveCreditCard() {
-
-        System.out.println("--->cardnumber: " + this.cardNumber);
-
         Card card = new Card(
                 this.cardNumber,
                 this.monthSpinner,
@@ -454,10 +451,6 @@ public class SignUpActivity extends AppCompatActivity {
             new TokenCallback() {
                 public void onSuccess(Token token) {
                     String url = "http://" + Ip + ":" + Puerto + "/YuberWEB/rest/Proveedor/AsociarMecanismoDePago/" + email + "," + token.getId().toString() + "," + clavePrivada.getText().toString();
-
-                    System.out.println("--->url: " + url);
-                    System.out.println("--->clave publica: " + clavePublica.getText().toString());
-
 
                     AsyncHttpClient client = new AsyncHttpClient();
                     ByteArrayEntity entity = null;

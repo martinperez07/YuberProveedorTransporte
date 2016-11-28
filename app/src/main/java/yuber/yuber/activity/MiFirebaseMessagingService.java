@@ -27,6 +27,7 @@ public class MiFirebaseMessagingService extends FirebaseMessagingService {
         String tabajando = sharedpreferences.getString(EstoyTrabajando, "");
         String enViaje = sharedpreferences.getString(EnViaje, "");
         String tituloNotificacion = remoteMessage.getNotification().getTitle();
+        System.out.println("ALGO LLEGOOOOOO");
         if (tabajando.contains("true")) {
             if (enViaje.contains("false")) {
                 if (tituloNotificacion.equals("Nueva solicitud"))

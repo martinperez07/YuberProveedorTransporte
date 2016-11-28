@@ -33,17 +33,21 @@ public class LoginActivity extends AppCompatActivity {
     private EditText mPasswordView;
     private String Ip = "54.203.12.195";
     private String Puerto = "8080";
-    ProgressDialog prgDialogCargando;
 
     public static final String MyPREFERENCES = "MyPrefs" ;
     public static final String EmailKey = "emailKey";
     public static final String TokenKey = "tokenKey";
     SharedPreferences sharedpreferences;
+    ProgressDialog DialogCargando;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        DialogCargando = new ProgressDialog(this);
+        DialogCargando.setMessage("Espere unos segundos...");
+        DialogCargando.setCancelable(false);
 
         mEmailView = (EditText) findViewById(R.id.input_email);
         mPasswordView = (EditText) findViewById(R.id.input_password);
@@ -62,10 +66,6 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        prgDialogCargando = new ProgressDialog(this);
-        prgDialogCargando.setMessage("Please wait");
-        prgDialogCargando.setCancelable(false);
-
         //BOTON LOGIN
         Button login = (Button) findViewById(R.id.btn_login);
         login.setOnClickListener(new View.OnClickListener() {
@@ -80,7 +80,6 @@ public class LoginActivity extends AppCompatActivity {
         SharedPreferences sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
         String token = sharedpreferences.getString(TokenKey, "");
         if(validate()){
-            //prgDialogCargando.show();
             String email = mEmailView.getText().toString();
             String password = mPasswordView.getText().toString();
 
@@ -106,9 +105,11 @@ public class LoginActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
             }
             entity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
+            DialogCargando.show();
             client.post(null, url, entity, "application/json", new AsyncHttpResponseHandler(){
                 @Override
                 public void onSuccess(String response) {
+                    DialogCargando.hide();
                     if (response.contains("true")){
                         cambiarAHome();
                     }else{
@@ -117,6 +118,7 @@ public class LoginActivity extends AppCompatActivity {
                 }
                 @Override
                 public void onFailure(int statusCode, Throwable error, String content){
+                    DialogCargando.hide();
                     if(statusCode == 404){
                         Toast.makeText(getApplicationContext(), "Requested resource not found", Toast.LENGTH_LONG).show();
                     }else if(statusCode == 500){
@@ -130,7 +132,6 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void cambiarAHome(){
-        //Obtengo el mail
         Intent homeIntent = new Intent(getApplicationContext(), MainActivity.class);
         homeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(homeIntent);

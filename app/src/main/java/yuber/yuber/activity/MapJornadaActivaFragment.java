@@ -38,7 +38,6 @@ public class MapJornadaActivaFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     @Override
@@ -48,7 +47,6 @@ public class MapJornadaActivaFragment extends Fragment {
         switchJornada = (Switch) rootView.findViewById(R.id.JornadaActiva);
 
         /* CONSULTO AL SERVIDOR SI ESTA TRABAJANDO */
-
         SharedPreferences sharedpreferences = getActivity().getSharedPreferences(MyPREFERENCES, Context.MODE_MULTI_PROCESS);
         String email = sharedpreferences.getString(EmailKey, "");
         estoyTrabajando(email);
