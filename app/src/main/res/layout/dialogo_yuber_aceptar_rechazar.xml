@@ -67,6 +67,8 @@
                  android:fillViewport="true"
                  android:stepSize="0.5"
                  android:numStars="5"
+                 android:progressTint="@color/colorAccent"
+                 android:secondaryProgressTint="@android:color/transparent"
                  />
          </LinearLayout>
 

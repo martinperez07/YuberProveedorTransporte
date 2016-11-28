@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -27,7 +28,12 @@ public class MiFirebaseMessagingService extends FirebaseMessagingService {
         String tabajando = sharedpreferences.getString(EstoyTrabajando, "");
         String enViaje = sharedpreferences.getString(EnViaje, "");
         String tituloNotificacion = remoteMessage.getNotification().getTitle();
-        System.out.println("ALGO LLEGOOOOOO");
+        // IMPRIMIENDO NOTIFICACIONES
+        if (remoteMessage.getData().size() > 0){
+            Map<String, String> data = remoteMessage.getData();
+            Log.d(TAG, "Message data payload: " + data);
+        }
+        Log.d(TAG, "Message textNombreServicio: " + tituloNotificacion );
         if (tabajando.contains("true")) {
             if (enViaje.contains("false")) {
                 if (tituloNotificacion.equals("Nueva solicitud"))
