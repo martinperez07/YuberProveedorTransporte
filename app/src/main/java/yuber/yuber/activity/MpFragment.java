@@ -109,7 +109,7 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
 
     private Button IniciarViaje;
     private Button FinViaje;
-    private Button CancelarViaje;
+    //private Button CancelarViaje;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -148,8 +148,8 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
         IniciarViaje = (Button) v.findViewById(R.id.IniciarViaje);
         IniciarViaje.setOnClickListener(crearBotonIniciar());
 
-        CancelarViaje = (Button) v.findViewById(R.id.CancelarViaje);
-        CancelarViaje.setOnClickListener(crearBotonCancelar());
+        //CancelarViaje = (Button) v.findViewById(R.id.CancelarViaje);
+        //CancelarViaje.setOnClickListener(crearBotonCancelar());
 
         FinViaje = (Button) v.findViewById(R.id.FinViaje);
         FinViaje.setOnClickListener(crearBotonFin());
@@ -171,7 +171,7 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
 
     public void ocultarIV(){
         IniciarViaje.setVisibility(View.GONE);
-        CancelarViaje.setVisibility(View.GONE);
+        //CancelarViaje.setVisibility(View.GONE);
     }
 
     public void ocultarFV(){
@@ -184,7 +184,7 @@ public class MpFragment extends Fragment implements OnMapReadyCallback, GoogleAp
         editor.putString(EstadoDelViaje, "inicio");
         editor.commit();
         IniciarViaje.setVisibility(View.VISIBLE);
-        CancelarViaje.setVisibility(View.VISIBLE);
+        //CancelarViaje.setVisibility(View.VISIBLE);
     }
 
     public void mostrarFV(){
